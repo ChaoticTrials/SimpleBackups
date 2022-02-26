@@ -1,0 +1,28 @@
+modLoader="javafml"
+loaderVersion="[39,)"
+license="The Apache License, Version 2.0"
+issueTrackerURL="https://github.com/MelanX/SkyblockBuilder/issues"
+
+[[mods]]
+modId="simplebackups"
+version="${file.jarVersion}"
+displayName="Simple Backups"
+displayURL="https://www.curseforge.com/members/melanx/"
+authors="MelanX"
+description="""
+A simple mod to create scheduled backups.
+"""
+
+[[dependencies.simplebackups]]
+    modId="forge"
+    mandatory=true
+    versionRange="[39.0.76,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.simplebackups]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.18.1, 1.19)"
+    ordering="NONE"
+    side="BOTH"

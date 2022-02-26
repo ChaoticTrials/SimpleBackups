@@ -1,0 +1,54 @@
+name: Bug Report
+description: Report an issue with supported versions of SimpleBackups
+labels: [ bug ]
+body:
+  - type: input
+    id: mc-version
+    attributes:
+      label: Minecraft version
+      placeholder: eg. 1.18.1
+    validations:
+      required: true
+  - type: input
+    id: mod-version
+    attributes:
+      label: Simple Backups version
+      placeholder: eg. 1.18.1-1.0.0
+    validations:
+      required: true
+  - type: input
+    id: forge-version
+    attributes:
+      label: Forge version
+      placeholder: eg. 39.0.88
+    validations:
+      required: true
+  - type: input
+    id: log-file
+    attributes:
+      label: The latest.log file
+      description: |
+        Please use a paste site such as [gist](https://gist.github.com/) / [pastebin](https://pastebin.com/) / etc.
+        For more information, see https://git.io/mclogs
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Issue description
+      placeholder: A description of the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. First step
+        2. Second step
+        3. etc...
+  - type: textarea
+    id: additional-information
+    attributes:
+      label: Other information
+      description: Any other relevant information that is related to this issue, such as modpacks, other mods and their versions.

@@ -1,0 +1,5 @@
+buildscript {
+    apply from: 'https://noeppi-noeppi.github.io/ModUtils/v3/buildscript.gradle', to: buildscript
+}
+
+apply from: 'https://noeppi-noeppi.github.io/ModUtils/v3/mod.gradle'
