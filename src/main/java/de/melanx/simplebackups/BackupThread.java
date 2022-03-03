@@ -4,15 +4,19 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.FileUtil;
 import net.minecraft.Util;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraftforge.common.ForgeI18n;
 import net.minecraftforge.fml.loading.FMLPaths;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.minecraftforge.network.ConnectionData;
+import net.minecraftforge.network.NetworkHooks;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.io.BufferedOutputStream;
@@ -44,7 +48,7 @@ public class BackupThread extends Thread {
             .appendValue(ChronoField.MINUTE_OF_HOUR, 2).appendLiteral('-')
             .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
             .toFormatter();
-    public static final Logger LOGGER = LogManager.getLogger(BackupThread.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(BackupThread.class);
     private final MinecraftServer server;
     private final LevelStorageSource.LevelStorageAccess storageSource;
 
@@ -135,16 +139,18 @@ public class BackupThread extends Thread {
     }
 
     private void broadcast(String message, Style style, Object... parameters) {
-        Component defaultComponent = new TextComponent(DefaultTranslator.parseKey(message, parameters)).withStyle(style);
-        Component realComponent = new TranslatableComponent(message, parameters).withStyle(style);
-
         this.server.getPlayerList().getPlayers().forEach(player -> {
-            if (DefaultTranslator.PLAYERS_WITHOUT_MOD.contains(player.getGameProfile().getId())) {
-                player.sendMessage(defaultComponent, Util.NIL_UUID);
-            } else {
-                player.sendMessage(realComponent, Util.NIL_UUID);
-            }
+            player.sendMessage(this.component(player, message, parameters).withStyle(style), Util.NIL_UUID);
         });
+    }
+
+    private MutableComponent component(ServerPlayer player, String key, Object... parameters) {
+        ConnectionData data = NetworkHooks.getConnectionData(player.connection.connection);
+        if (data != null && data.getModList().contains(SimpleBackups.MODID)) {
+            return new TranslatableComponent(key, parameters);
+        }
+
+        return new TextComponent(ForgeI18n.parseMessage(key, parameters));
     }
 
     // vanilla copy with modifications

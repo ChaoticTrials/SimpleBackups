@@ -28,16 +28,8 @@ public class EventListener {
     }
 
     @SubscribeEvent
-    public void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getPlayer() instanceof ServerPlayer player && !SimpleBackups.getNetwork().isRemotePresent(player)) {
-            DefaultTranslator.PLAYERS_WITHOUT_MOD.add(player.getGameProfile().getId());
-        }
-    }
-
-    @SubscribeEvent
     public void onPlayerDisconnect(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getPlayer() instanceof ServerPlayer player) {
-            DefaultTranslator.PLAYERS_WITHOUT_MOD.remove(event.getPlayer().getGameProfile().getId());
             //noinspection ConstantConditions
             if (player.getServer().getPlayerList().getPlayers().isEmpty()) {
                 this.remainingBackups = 1;
