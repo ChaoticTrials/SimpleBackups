@@ -12,7 +12,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraftforge.common.ForgeI18n;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.network.ConnectionData;
 import net.minecraftforge.network.NetworkHooks;
 import org.slf4j.Logger;
@@ -39,7 +38,6 @@ import java.util.zip.ZipOutputStream;
 
 public class BackupThread extends Thread {
 
-    private static final Path OUTPUT_PATH = FMLPaths.GAMEDIR.get().resolve("simplebackups");
     private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
             .appendValue(ChronoField.YEAR, 4, 10, SignStyle.EXCEEDS_PAD).appendLiteral('-')
             .appendValue(ChronoField.MONTH_OF_YEAR, 2).appendLiteral('-')
@@ -63,7 +61,7 @@ public class BackupThread extends Thread {
         BackupThread thread = new BackupThread(server);
         BackupData backupData = BackupData.get(server);
         if (!server.getPlayerList().getPlayers().isEmpty() && System.currentTimeMillis() - ConfigHandler.getTimer() > backupData.getLastSaved()) {
-            File backups = OUTPUT_PATH.toFile();
+            File backups = ConfigHandler.getOutputPath().toFile();
             if (backups.isDirectory()) {
                 File[] files = backups.listFiles();
                 if (files != null && files.length >= ConfigHandler.getBackupsToKeep()) {
@@ -90,7 +88,7 @@ public class BackupThread extends Thread {
     public static void saveStorageSize() {
         try {
             while (BackupThread.getOutputFolderSize() > ConfigHandler.getMaxDiskSize()) {
-                File[] files = OUTPUT_PATH.toFile().listFiles();
+                File[] files = ConfigHandler.getOutputPath().toFile().listFiles();
                 if (Objects.requireNonNull(files).length == 1) {
                     LOGGER.error("Cannot delete old files to save disk space. Only one backup file left!");
                     return;
@@ -111,7 +109,7 @@ public class BackupThread extends Thread {
     @Override
     public void run() {
         try {
-            Files.createDirectories(OUTPUT_PATH);
+            Files.createDirectories(ConfigHandler.getOutputPath());
             long start = System.currentTimeMillis();
             this.broadcast("simplebackups.backup_started", Style.EMPTY.withColor(ChatFormatting.GOLD));
             long size = this.makeWorldBackup();
@@ -125,7 +123,7 @@ public class BackupThread extends Thread {
     }
 
     private static long getOutputFolderSize() throws IOException {
-        File[] files = OUTPUT_PATH.toFile().listFiles();
+        File[] files = ConfigHandler.getOutputPath().toFile().listFiles();
         long size = 0;
         try {
             for (File file : Objects.requireNonNull(files)) {
@@ -157,7 +155,7 @@ public class BackupThread extends Thread {
     private long makeWorldBackup() throws IOException {
         this.storageSource.checkLock();
         String fileName = this.storageSource.levelId + "_" + LocalDateTime.now().format(FORMATTER);
-        Path path = FMLPaths.GAMEDIR.get().resolve("simplebackups");
+        Path path = ConfigHandler.getOutputPath();
 
         try {
             Files.createDirectories(Files.exists(path) ? path.toRealPath() : path);

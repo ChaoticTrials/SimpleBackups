@@ -2,6 +2,9 @@ package de.melanx.simplebackups;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class ConfigHandler {
 
     public static final ForgeConfigSpec COMMON_CONFIG;
@@ -15,6 +18,7 @@ public class ConfigHandler {
     private static ForgeConfigSpec.IntValue backupsToKeep;
     private static ForgeConfigSpec.IntValue timer;
     private static ForgeConfigSpec.ConfigValue<String> maxDiskSize;
+    private static ForgeConfigSpec.ConfigValue<String> outputPath;
 
     public static void init(ForgeConfigSpec.Builder builder) {
         backupsToKeep = builder.comment("The max amount of backup files to keep.")
@@ -25,6 +29,8 @@ public class ConfigHandler {
                         "Needs to be written as <number><space><storage type>",
                         "Valid storage types: B, KB, MB, GB, TB")
                 .define("maxDiskSize", "25 GB");
+        outputPath = builder.comment("Used to define the output path.")
+                .define("outputPath", "simplebackups");
     }
 
     public static int getBackupsToKeep() {
@@ -43,5 +49,9 @@ public class ConfigHandler {
         }
 
         return StorageSize.getBytes(s);
+    }
+
+    public static Path getOutputPath() {
+        return Paths.get(outputPath.get());
     }
 }

@@ -3,6 +3,7 @@ package de.melanx.simplebackups;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class EventListener {
@@ -35,5 +36,10 @@ public class EventListener {
                 this.remainingBackups = 1;
             }
         }
+    }
+
+    @SubscribeEvent
+    public void onClick(PlayerInteractEvent.LeftClickEmpty event) {
+        System.out.println(ConfigHandler.getOutputPath());
     }
 }
