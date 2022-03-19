@@ -17,6 +17,7 @@ public class ConfigHandler {
 
     private static ForgeConfigSpec.IntValue backupsToKeep;
     private static ForgeConfigSpec.IntValue timer;
+    private static ForgeConfigSpec.BooleanValue sendMessages;
     private static ForgeConfigSpec.ConfigValue<String> maxDiskSize;
     private static ForgeConfigSpec.ConfigValue<String> outputPath;
 
@@ -25,6 +26,8 @@ public class ConfigHandler {
                 .defineInRange("backupsToKeep", 10, 1, Short.MAX_VALUE);
         timer = builder.comment("The time between two backups in minutes", "5 = each 5 minutes", "60 = each hour", "1440 = each day")
                 .defineInRange("timer", 120, 1, Short.MAX_VALUE);
+        sendMessages = builder.comment("Should message be sent when backup is in the making?")
+                .define("sendMessages", true);
         maxDiskSize = builder.comment("The max size of storage the backup folder. If it takes more storage, old files will be deleted.",
                         "Needs to be written as <number><space><storage type>",
                         "Valid storage types: B, KB, MB, GB, TB")
@@ -53,5 +56,9 @@ public class ConfigHandler {
 
     public static Path getOutputPath() {
         return Paths.get(outputPath.get());
+    }
+
+    public static boolean sendMessages() {
+        return sendMessages.get();
     }
 }

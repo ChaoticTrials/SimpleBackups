@@ -137,9 +137,11 @@ public class BackupThread extends Thread {
     }
 
     private void broadcast(String message, Style style, Object... parameters) {
-        this.server.getPlayerList().getPlayers().forEach(player -> {
-            player.sendMessage(this.component(player, message, parameters).withStyle(style), Util.NIL_UUID);
-        });
+        if (ConfigHandler.sendMessages()) {
+            this.server.getPlayerList().getPlayers().forEach(player -> {
+                player.sendMessage(this.component(player, message, parameters).withStyle(style), Util.NIL_UUID);
+            });
+        }
     }
 
     private MutableComponent component(ServerPlayer player, String key, Object... parameters) {
