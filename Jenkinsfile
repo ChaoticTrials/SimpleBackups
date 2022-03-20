@@ -20,7 +20,7 @@ pipeline {
         stage('Build and Publish') {
             steps {
                 echo 'Building'
-                sh './gradlew build curseforge modrinth publish'
+                sh './gradlew build publish curseforge modrinth'
             }
         }
 
