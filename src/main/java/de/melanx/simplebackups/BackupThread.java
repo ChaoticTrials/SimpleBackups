@@ -58,9 +58,9 @@ public class BackupThread extends Thread {
     }
 
     public static boolean tryCreateBackup(MinecraftServer server) {
-        BackupThread thread = new BackupThread(server);
         BackupData backupData = BackupData.get(server);
         if (!server.getPlayerList().getPlayers().isEmpty() && System.currentTimeMillis() - ConfigHandler.getTimer() > backupData.getLastSaved()) {
+            BackupThread thread = new BackupThread(server);
             File backups = ConfigHandler.getOutputPath().toFile();
             if (backups.isDirectory()) {
                 File[] files = backups.listFiles();
@@ -138,8 +138,10 @@ public class BackupThread extends Thread {
 
     private void broadcast(String message, Style style, Object... parameters) {
         if (ConfigHandler.sendMessages()) {
-            this.server.getPlayerList().getPlayers().forEach(player -> {
-                player.sendMessage(this.component(player, message, parameters).withStyle(style), Util.NIL_UUID);
+            this.server.execute(() -> {
+                this.server.getPlayerList().getPlayers().forEach(player -> {
+                    player.sendMessage(this.component(player, message, parameters).withStyle(style), Util.NIL_UUID);
+                });
             });
         }
     }
