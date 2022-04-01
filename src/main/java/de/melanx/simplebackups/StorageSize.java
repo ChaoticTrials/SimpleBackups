@@ -43,11 +43,6 @@ public enum StorageSize {
     }
 
     public StorageSize getLower() {
-        return switch (this) {
-            case MB -> KB;
-            case GB -> MB;
-            case TB -> GB;
-            default -> B;
-        };
+        return this.ordinal() == 0 ? this : StorageSize.values()[this.ordinal() - 1];
     }
 }

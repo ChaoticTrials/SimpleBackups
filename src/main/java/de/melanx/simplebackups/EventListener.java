@@ -8,16 +8,16 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class EventListener {
 
-    private int remainingBackups = 0;
+    private boolean doBackup;
 
     @SubscribeEvent
     public void onServerTick(TickEvent.WorldTickEvent event) {
         //noinspection ConstantConditions
         if (event.phase == TickEvent.Phase.END && !event.world.isClientSide
                 && event.world.getGameTime() % 20 == 0 && event.world == event.world.getServer().overworld()) {
-            if (!event.world.getServer().getPlayerList().getPlayers().isEmpty() || this.remainingBackups > 0) {
-                if (this.remainingBackups > 0) {
-                    this.remainingBackups--;
+            if (!event.world.getServer().getPlayerList().getPlayers().isEmpty() || this.doBackup) {
+                if (this.doBackup) {
+                    this.doBackup = false;
                 }
 
                 boolean done = BackupThread.tryCreateBackup(event.world.getServer());
@@ -33,7 +33,7 @@ public class EventListener {
         if (event.getPlayer() instanceof ServerPlayer player) {
             //noinspection ConstantConditions
             if (player.getServer().getPlayerList().getPlayers().isEmpty()) {
-                this.remainingBackups = 1;
+                this.doBackup = true;
             }
         }
     }
