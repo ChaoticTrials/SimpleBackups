@@ -37,9 +37,4 @@ public class EventListener {
             }
         }
     }
-
-    @SubscribeEvent
-    public void onClick(PlayerInteractEvent.LeftClickEmpty event) {
-        System.out.println(ConfigHandler.getOutputPath());
-    }
 }
