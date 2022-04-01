@@ -48,41 +48,54 @@ public class BackupThread extends Thread {
             .toFormatter();
     public static final Logger LOGGER = LoggerFactory.getLogger(BackupThread.class);
     private final MinecraftServer server;
+    private final boolean quiet;
     private final LevelStorageSource.LevelStorageAccess storageSource;
 
-    private BackupThread(@Nonnull MinecraftServer server) {
+    private BackupThread(@Nonnull MinecraftServer server, boolean quiet) {
         this.server = server;
         this.storageSource = server.storageSource;
+        this.quiet = quiet;
         this.setName("SimpleBackups");
         this.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
     }
 
     public static boolean tryCreateBackup(MinecraftServer server) {
         BackupData backupData = BackupData.get(server);
-        if (!server.getPlayerList().getPlayers().isEmpty() && System.currentTimeMillis() - ConfigHandler.getTimer() > backupData.getLastSaved()) {
-            BackupThread thread = new BackupThread(server);
-            File backups = ConfigHandler.getOutputPath().toFile();
-            if (backups.isDirectory()) {
-                File[] files = backups.listFiles();
-                if (files != null && files.length >= ConfigHandler.getBackupsToKeep()) {
-                    Arrays.sort(files, Comparator.comparingLong(File::lastModified));
-                    while (files.length >= ConfigHandler.getBackupsToKeep()) {
-                        boolean deleted = files[0].delete();
-                        String name = files[0].getName();
-                        if (deleted) {
-                            LOGGER.info("Successfully deleted \"" + name + "\"");
-                            files = Arrays.copyOfRange(files, 1, files.length);
-                        }
-                    }
-                }
-            }
+        if (System.currentTimeMillis() - ConfigHandler.getTimer() > backupData.getLastSaved()) {
+            BackupThread thread = new BackupThread(server, false);
+            BackupThread.deleteFiles();
 
             thread.start();
             backupData.updateSaveTime(System.currentTimeMillis());
+
             return true;
         }
 
         return false;
+    }
+
+    public static void createBackup(MinecraftServer server, boolean quiet) {
+        BackupThread thread = new BackupThread(server, quiet);
+        BackupThread.deleteFiles();
+        thread.start();
+    }
+
+    public static void deleteFiles() {
+        File backups = ConfigHandler.getOutputPath().toFile();
+        if (backups.isDirectory()) {
+            File[] files = backups.listFiles();
+            if (files != null && files.length >= ConfigHandler.getBackupsToKeep()) {
+                Arrays.sort(files, Comparator.comparingLong(File::lastModified));
+                while (files.length >= ConfigHandler.getBackupsToKeep()) {
+                    boolean deleted = files[0].delete();
+                    String name = files[0].getName();
+                    if (deleted) {
+                        LOGGER.info("Successfully deleted \"" + name + "\"");
+                        files = Arrays.copyOfRange(files, 1, files.length);
+                    }
+                }
+            }
+        }
     }
 
     public static void saveStorageSize() {
@@ -137,16 +150,18 @@ public class BackupThread extends Thread {
     }
 
     private void broadcast(String message, Style style, Object... parameters) {
-        if (ConfigHandler.sendMessages()) {
+        if (ConfigHandler.sendMessages() && !this.quiet) {
             this.server.execute(() -> {
                 this.server.getPlayerList().getPlayers().forEach(player -> {
-                    player.sendMessage(this.component(player, message, parameters).withStyle(style), Util.NIL_UUID);
+                    if (player.hasPermissions(2)) {
+                        player.sendMessage(BackupThread.component(player, message, parameters).withStyle(style), Util.NIL_UUID);
+                    }
                 });
             });
         }
     }
 
-    private MutableComponent component(ServerPlayer player, String key, Object... parameters) {
+    public static MutableComponent component(ServerPlayer player, String key, Object... parameters) {
         ConnectionData data = NetworkHooks.getConnectionData(player.connection.connection);
         if (data != null && data.getModList().contains(SimpleBackups.MODID)) {
             return new TranslatableComponent(key, parameters);
