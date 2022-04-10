@@ -2,6 +2,7 @@ package de.melanx.simplebackups;
 
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -55,7 +56,11 @@ public class ConfigHandler {
     }
 
     public static Path getOutputPath() {
-        return Paths.get(outputPath.get());
+        try {
+            return Paths.get(outputPath.get()).toRealPath();
+        } catch (IOException e) {
+            return Paths.get(outputPath.get());
+        }
     }
 
     public static boolean sendMessages() {
