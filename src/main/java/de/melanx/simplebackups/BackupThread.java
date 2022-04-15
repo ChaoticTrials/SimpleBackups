@@ -63,8 +63,6 @@ public class BackupThread extends Thread {
         BackupData backupData = BackupData.get(server);
         if (System.currentTimeMillis() - ConfigHandler.getTimer() > backupData.getLastSaved()) {
             BackupThread thread = new BackupThread(server, false);
-            BackupThread.deleteFiles();
-
             thread.start();
             backupData.updateSaveTime(System.currentTimeMillis());
 
@@ -76,11 +74,10 @@ public class BackupThread extends Thread {
 
     public static void createBackup(MinecraftServer server, boolean quiet) {
         BackupThread thread = new BackupThread(server, quiet);
-        BackupThread.deleteFiles();
         thread.start();
     }
 
-    public static void deleteFiles() {
+    public void deleteFiles() {
         File backups = ConfigHandler.getOutputPath().toFile();
         if (backups.isDirectory()) {
             File[] files = backups.listFiles();
@@ -122,6 +119,8 @@ public class BackupThread extends Thread {
     @Override
     public void run() {
         try {
+            this.deleteFiles();
+
             Files.createDirectories(ConfigHandler.getOutputPath());
             long start = System.currentTimeMillis();
             this.broadcast("simplebackups.backup_started", Style.EMPTY.withColor(ChatFormatting.GOLD));
