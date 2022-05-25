@@ -166,7 +166,7 @@ public class BackupThread extends Thread {
             return new TranslatableComponent(key, parameters);
         }
 
-        return new TextComponent(ForgeI18n.parseMessage(key, parameters));
+        return new TextComponent(String.format(ForgeI18n.getPattern(key), parameters));
     }
 
     // vanilla copy with modifications
