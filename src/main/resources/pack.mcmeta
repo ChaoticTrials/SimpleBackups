@@ -1,6 +1,8 @@
 {
   "pack": {
     "description": "Simple Backups resources",
-    "pack_format": 9
+    "pack_format": 10,
+    "forge:data_pack_format": 10,
+    "forge:resource_pack_format": 9
   }
 }

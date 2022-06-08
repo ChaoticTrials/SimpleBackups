@@ -4,10 +4,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.FileUtil;
 import net.minecraft.Util;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelStorageSource;
@@ -18,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.awt.TextComponent;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +36,7 @@ import java.util.zip.ZipOutputStream;
 
 public class BackupThread extends Thread {
 
+    private static final Component EMPTY_COMPONENT = Component.empty();
     private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
             .appendValue(ChronoField.YEAR, 4, 10, SignStyle.EXCEEDS_PAD).appendLiteral('-')
             .appendValue(ChronoField.MONTH_OF_YEAR, 2).appendLiteral('-')
@@ -153,7 +152,7 @@ public class BackupThread extends Thread {
             this.server.execute(() -> {
                 this.server.getPlayerList().getPlayers().forEach(player -> {
                     if (player.hasPermissions(2)) {
-                        player.sendMessage(BackupThread.component(player, message, parameters).withStyle(style), Util.NIL_UUID);
+                        player.sendChatMessage(PlayerChatMessage.unsigned(BackupThread.component(player, message, parameters).withStyle(style)), ChatSender.system(EMPTY_COMPONENT), ChatType.SYSTEM);
                     }
                 });
             });
@@ -163,10 +162,10 @@ public class BackupThread extends Thread {
     public static MutableComponent component(ServerPlayer player, String key, Object... parameters) {
         ConnectionData data = NetworkHooks.getConnectionData(player.connection.connection);
         if (data != null && data.getModList().contains(SimpleBackups.MODID)) {
-            return new TranslatableComponent(key, parameters);
+            return Component.translatable(key, parameters);
         }
 
-        return new TextComponent(String.format(ForgeI18n.getPattern(key), parameters));
+        return Component.literal(String.format(ForgeI18n.getPattern(key), parameters));
     }
 
     // vanilla copy with modifications
@@ -186,7 +185,7 @@ public class BackupThread extends Thread {
 
         try {
             Path levelName = Paths.get(this.storageSource.levelId);
-            Path levelPath = this.storageSource.levelPath;
+            Path levelPath = this.storageSource.getWorldDir().resolve(this.storageSource.levelId);
             Files.walkFileTree(levelPath, new SimpleFileVisitor<>() {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     if (!file.endsWith("session.lock")) {
