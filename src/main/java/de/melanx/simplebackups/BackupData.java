@@ -37,5 +37,6 @@ public class BackupData extends SavedData {
 
     public void updateSaveTime(long time) {
         this.lastSaved = time;
+        this.setDirty();
     }
 }
