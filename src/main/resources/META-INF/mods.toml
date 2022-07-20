@@ -17,7 +17,7 @@ A simple mod to create scheduled backups.
 [[dependencies.simplebackups]]
     modId="forge"
     mandatory=true
-    versionRange="[41.0.3,)"
+    versionRange="[41.0.98,)"
     ordering="NONE"
     side="BOTH"
 

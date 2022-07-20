@@ -18,14 +18,14 @@ public class EventListener {
     }
 
     @SubscribeEvent
-    public void onServerTick(TickEvent.WorldTickEvent event) {
+    public void onServerTick(TickEvent.LevelTickEvent event) {
         //noinspection ConstantConditions
-        if (event.phase == TickEvent.Phase.END && !event.world.isClientSide
-                && event.world.getGameTime() % 20 == 0 && event.world == event.world.getServer().overworld()) {
-            if (!event.world.getServer().getPlayerList().getPlayers().isEmpty() || this.doBackup) {
+        if (event.phase == TickEvent.Phase.END && !event.level.isClientSide
+                && event.level.getGameTime() % 20 == 0 && event.level == event.level.getServer().overworld()) {
+            if (!event.level.getServer().getPlayerList().getPlayers().isEmpty() || this.doBackup) {
                 this.doBackup = false;
 
-                boolean done = BackupThread.tryCreateBackup(event.world.getServer());
+                boolean done = BackupThread.tryCreateBackup(event.level.getServer());
                 if (done) {
                     SimpleBackups.LOGGER.info("Backup done.");
                 }
@@ -35,7 +35,7 @@ public class EventListener {
 
     @SubscribeEvent
     public void onPlayerDisconnect(PlayerEvent.PlayerLoggedOutEvent event) {
-        if (event.getPlayer() instanceof ServerPlayer player) {
+        if (event.getEntity() instanceof ServerPlayer player) {
             //noinspection ConstantConditions
             if (player.getServer().getPlayerList().getPlayers().isEmpty()) {
                 this.doBackup = true;
