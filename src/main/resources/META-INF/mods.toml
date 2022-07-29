@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[41,)"
+loaderVersion="[42,)"
 license="The Apache License, Version 2.0"
 issueTrackerURL="https://github.com/MelanX/SkyblockBuilder/issues"
 
@@ -17,13 +17,13 @@ A simple mod to create scheduled backups.
 [[dependencies.simplebackups]]
     modId="forge"
     mandatory=true
-    versionRange="[41.0.98,)"
+    versionRange="[42,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.simplebackups]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.19, 1.20)"
+    versionRange="[1.19.1, 1.20)"
     ordering="NONE"
     side="BOTH"

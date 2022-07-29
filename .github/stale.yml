@@ -1,0 +1,10 @@
+daysUntilStale: 7
+daysUntilClose: 3
+onlyLabels:
+  - needs more info
+staleLabel: Stale
+markComment: >
+  The required information were not provided yet. Thus, this was marked as stale.
+closeComment: >
+  None of the required information was ever provided. If this is still an issue, feel free to reopen with
+  the required information, or create a new issue.

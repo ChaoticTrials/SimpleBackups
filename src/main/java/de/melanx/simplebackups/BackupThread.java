@@ -3,8 +3,9 @@ package de.melanx.simplebackups;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.FileUtil;
-import net.minecraft.Util;
-import net.minecraft.network.chat.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelStorageSource;
@@ -15,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.awt.TextComponent;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -152,7 +152,7 @@ public class BackupThread extends Thread {
             this.server.execute(() -> {
                 this.server.getPlayerList().getPlayers().forEach(player -> {
                     if (player.hasPermissions(2)) {
-                        player.sendChatMessage(PlayerChatMessage.unsigned(BackupThread.component(player, message, parameters).withStyle(style)), ChatSender.system(EMPTY_COMPONENT), ChatType.SYSTEM);
+                        player.sendSystemMessage(BackupThread.component(player, message, parameters).withStyle(style));
                     }
                 });
             });
