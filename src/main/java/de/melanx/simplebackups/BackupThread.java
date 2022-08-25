@@ -1,5 +1,6 @@
 package de.melanx.simplebackups;
 
+import de.melanx.simplebackups.compat.Mc2DiscordCompat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.FileUtil;
@@ -36,7 +37,6 @@ import java.util.zip.ZipOutputStream;
 
 public class BackupThread extends Thread {
 
-    private static final Component EMPTY_COMPONENT = Component.empty();
     private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
             .appendValue(ChronoField.YEAR, 4, 10, SignStyle.EXCEEDS_PAD).appendLiteral('-')
             .appendValue(ChronoField.MONTH_OF_YEAR, 2).appendLiteral('-')
@@ -156,6 +156,10 @@ public class BackupThread extends Thread {
                     }
                 });
             });
+
+            if (Mc2DiscordCompat.isLoaded() && ConfigHandler.mc2discord()) {
+                Mc2DiscordCompat.announce(Component.translatable(message, parameters));
+            }
         }
     }
 
