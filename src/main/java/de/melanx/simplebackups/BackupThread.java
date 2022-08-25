@@ -1,5 +1,6 @@
 package de.melanx.simplebackups;
 
+import de.melanx.simplebackups.compat.Mc2DiscordCompat;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.FileUtil;
@@ -157,6 +158,10 @@ public class BackupThread extends Thread {
                     }
                 });
             });
+
+            if (Mc2DiscordCompat.isLoaded() && ConfigHandler.mc2discord()) {
+                Mc2DiscordCompat.announce(new TranslatableComponent(message, parameters));
+            }
         }
     }
 

@@ -22,6 +22,8 @@ public class ConfigHandler {
     private static ForgeConfigSpec.ConfigValue<String> maxDiskSize;
     private static ForgeConfigSpec.ConfigValue<String> outputPath;
 
+    private static ForgeConfigSpec.BooleanValue mc2discord;
+
     public static void init(ForgeConfigSpec.Builder builder) {
         backupsToKeep = builder.comment("The max amount of backup files to keep.")
                 .defineInRange("backupsToKeep", 10, 1, Short.MAX_VALUE);
@@ -35,6 +37,11 @@ public class ConfigHandler {
                 .define("maxDiskSize", "25 GB");
         outputPath = builder.comment("Used to define the output path.")
                 .define("outputPath", "simplebackups");
+
+        builder.push("mod_compat");
+        mc2discord = builder.comment("Should backup notifications be sent to Discord by using mc2discord? (needs to be installed)")
+                .define("mc2discord", true);
+        builder.pop();
     }
 
     public static int getBackupsToKeep() {
@@ -65,5 +72,9 @@ public class ConfigHandler {
 
     public static boolean sendMessages() {
         return sendMessages.get();
+    }
+
+    public static boolean mc2discord() {
+        return mc2discord.get();
     }
 }
