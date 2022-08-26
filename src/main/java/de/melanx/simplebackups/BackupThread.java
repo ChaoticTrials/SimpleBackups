@@ -50,12 +50,14 @@ public class BackupThread extends Thread {
     public static final Logger LOGGER = LoggerFactory.getLogger(BackupThread.class);
     private final MinecraftServer server;
     private final boolean quiet;
+    private final long lastSaved;
     private final LevelStorageSource.LevelStorageAccess storageSource;
 
-    private BackupThread(@Nonnull MinecraftServer server, boolean quiet) {
+    private BackupThread(@Nonnull MinecraftServer server, boolean quiet, long lastSaved) {
         this.server = server;
         this.storageSource = server.storageSource;
         this.quiet = quiet;
+        this.lastSaved = lastSaved;
         this.setName("SimpleBackups");
         this.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
     }
@@ -63,7 +65,7 @@ public class BackupThread extends Thread {
     public static boolean tryCreateBackup(MinecraftServer server) {
         BackupData backupData = BackupData.get(server);
         if (System.currentTimeMillis() - ConfigHandler.getTimer() > backupData.getLastSaved()) {
-            BackupThread thread = new BackupThread(server, false);
+            BackupThread thread = new BackupThread(server, false, backupData.getLastSaved());
             thread.start();
             backupData.updateSaveTime(System.currentTimeMillis());
 
@@ -74,7 +76,7 @@ public class BackupThread extends Thread {
     }
 
     public static void createBackup(MinecraftServer server, boolean quiet) {
-        BackupThread thread = new BackupThread(server, quiet);
+        BackupThread thread = new BackupThread(server, quiet, 0);
         thread.start();
     }
 
@@ -195,11 +197,14 @@ public class BackupThread extends Thread {
             Files.walkFileTree(levelPath, new SimpleFileVisitor<>() {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     if (!file.endsWith("session.lock")) {
-                        String completePath = levelName.resolve(levelPath.relativize(file)).toString().replace('\\', '/');
-                        ZipEntry zipentry = new ZipEntry(completePath);
-                        zipStream.putNextEntry(zipentry);
-                        com.google.common.io.Files.asByteSource(file.toFile()).copyTo(zipStream);
-                        zipStream.closeEntry();
+                        long lastModified = file.toFile().lastModified();
+                        if (!ConfigHandler.onlyModified() || lastModified - BackupThread.this.lastSaved > 0) {
+                            String completePath = levelName.resolve(levelPath.relativize(file)).toString().replace('\\', '/');
+                            ZipEntry zipentry = new ZipEntry(completePath);
+                            zipStream.putNextEntry(zipentry);
+                            com.google.common.io.Files.asByteSource(file.toFile()).copyTo(zipStream);
+                            zipStream.closeEntry();
+                        }
                     }
 
                     return FileVisitResult.CONTINUE;

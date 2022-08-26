@@ -11,6 +11,10 @@ public class BackupData extends SavedData {
 
     private long lastSaved;
 
+    private BackupData() {
+        // use BackupData.get
+    }
+
     public static BackupData get(ServerLevel level) {
         return BackupData.get(level.getServer());
     }
