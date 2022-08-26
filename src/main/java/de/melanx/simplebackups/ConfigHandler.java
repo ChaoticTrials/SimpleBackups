@@ -16,6 +16,7 @@ public class ConfigHandler {
         COMMON_CONFIG = COMMON_BUILDER.build();
     }
 
+    private static ForgeConfigSpec.BooleanValue onlyModified;
     private static ForgeConfigSpec.IntValue backupsToKeep;
     private static ForgeConfigSpec.IntValue timer;
     private static ForgeConfigSpec.BooleanValue sendMessages;
@@ -25,6 +26,8 @@ public class ConfigHandler {
     private static ForgeConfigSpec.BooleanValue mc2discord;
 
     public static void init(ForgeConfigSpec.Builder builder) {
+        onlyModified = builder.comment("Should only changed files be backed up? Useful for large worlds. Keep in mind that old backups are required for a complete backup. Alternatively, you could run the command to create a new complete backup.")
+                .define("onlyModified", false);
         backupsToKeep = builder.comment("The max amount of backup files to keep.")
                 .defineInRange("backupsToKeep", 10, 1, Short.MAX_VALUE);
         timer = builder.comment("The time between two backups in minutes", "5 = each 5 minutes", "60 = each hour", "1440 = each day")
@@ -68,6 +71,10 @@ public class ConfigHandler {
         } catch (IOException e) {
             return Paths.get(outputPath.get());
         }
+    }
+
+    public static boolean onlyModified() {
+        return onlyModified.get();
     }
 
     public static boolean sendMessages() {
