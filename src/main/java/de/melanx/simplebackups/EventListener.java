@@ -14,6 +14,7 @@ public class EventListener {
     @SubscribeEvent
     public void registerCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal(SimpleBackups.MODID)
+                .requires(stack -> stack.hasPermission(2))
                 .then(BackupCommand.register()));
     }
 
