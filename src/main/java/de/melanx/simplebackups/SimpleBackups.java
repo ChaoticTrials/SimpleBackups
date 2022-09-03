@@ -1,6 +1,10 @@
 package de.melanx.simplebackups;
 
+import de.melanx.simplebackups.client.ClientEventHandler;
+import de.melanx.simplebackups.network.SimpleNetwork;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -16,14 +20,22 @@ public class SimpleBackups {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(SimpleBackups.class);
     public static final String MODID = "simplebackups";
+    private static final SimpleNetwork network = new SimpleNetwork();
 
     public SimpleBackups() {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigHandler.COMMON_CONFIG);
         MinecraftForge.EVENT_BUS.register(new EventListener());
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.register(new ClientEventHandler()));
     }
 
     private void setup(FMLCommonSetupEvent event) {
+        network.registerPackets();
         ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (remote, isServer) -> true));
+    }
+
+    public static SimpleNetwork network() {
+        return network;
     }
 }

@@ -1,5 +1,7 @@
 package de.melanx.simplebackups;
 
+import de.melanx.simplebackups.commands.BackupCommand;
+import de.melanx.simplebackups.commands.PauseCommand;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -14,7 +16,8 @@ public class EventListener {
     @SubscribeEvent
     public void registerCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal(SimpleBackups.MODID)
-                .then(BackupCommand.register()));
+                .then(BackupCommand.register())
+                .then(PauseCommand.register()));
     }
 
     @SubscribeEvent
@@ -30,6 +33,13 @@ public class EventListener {
                     SimpleBackups.LOGGER.info("Backup done.");
                 }
             }
+        }
+    }
+
+    @SubscribeEvent
+    public void onPlayerConnect(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity().getServer() != null) {
+            SimpleBackups.network().pause(event.getEntity(), BackupData.get(event.getEntity().getServer()).isPaused());
         }
     }
 
