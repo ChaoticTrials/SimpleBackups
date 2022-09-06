@@ -1,6 +1,7 @@
 package de.melanx.simplebackups;
 
 import de.melanx.simplebackups.compat.Mc2DiscordCompat;
+import de.melanx.simplebackups.config.CommonConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.FileUtil;
@@ -62,7 +63,7 @@ public class BackupThread extends Thread {
 
     public static boolean tryCreateBackup(MinecraftServer server) {
         BackupData backupData = BackupData.get(server);
-        if (!backupData.isPaused() && System.currentTimeMillis() - ConfigHandler.getTimer() > backupData.getLastSaved()) {
+        if (!backupData.isPaused() && System.currentTimeMillis() - CommonConfig.getTimer() > backupData.getLastSaved()) {
             BackupThread thread = new BackupThread(server, false, backupData.getLastSaved());
             thread.start();
             backupData.updateSaveTime(System.currentTimeMillis());
@@ -79,12 +80,12 @@ public class BackupThread extends Thread {
     }
 
     public void deleteFiles() {
-        File backups = ConfigHandler.getOutputPath().toFile();
+        File backups = CommonConfig.getOutputPath().toFile();
         if (backups.isDirectory()) {
             File[] files = backups.listFiles();
-            if (files != null && files.length >= ConfigHandler.getBackupsToKeep()) {
+            if (files != null && files.length >= CommonConfig.getBackupsToKeep()) {
                 Arrays.sort(files, Comparator.comparingLong(File::lastModified));
-                while (files.length >= ConfigHandler.getBackupsToKeep()) {
+                while (files.length >= CommonConfig.getBackupsToKeep()) {
                     boolean deleted = files[0].delete();
                     String name = files[0].getName();
                     if (deleted) {
@@ -98,8 +99,8 @@ public class BackupThread extends Thread {
 
     public static void saveStorageSize() {
         try {
-            while (BackupThread.getOutputFolderSize() > ConfigHandler.getMaxDiskSize()) {
-                File[] files = ConfigHandler.getOutputPath().toFile().listFiles();
+            while (BackupThread.getOutputFolderSize() > CommonConfig.getMaxDiskSize()) {
+                File[] files = CommonConfig.getOutputPath().toFile().listFiles();
                 if (Objects.requireNonNull(files).length == 1) {
                     LOGGER.error("Cannot delete old files to save disk space. Only one backup file left!");
                     return;
@@ -122,7 +123,7 @@ public class BackupThread extends Thread {
         try {
             this.deleteFiles();
 
-            Files.createDirectories(ConfigHandler.getOutputPath());
+            Files.createDirectories(CommonConfig.getOutputPath());
             long start = System.currentTimeMillis();
             this.broadcast("simplebackups.backup_started", Style.EMPTY.withColor(ChatFormatting.GOLD));
             long size = this.makeWorldBackup();
@@ -136,7 +137,7 @@ public class BackupThread extends Thread {
     }
 
     private static long getOutputFolderSize() throws IOException {
-        File[] files = ConfigHandler.getOutputPath().toFile().listFiles();
+        File[] files = CommonConfig.getOutputPath().toFile().listFiles();
         long size = 0;
         try {
             for (File file : Objects.requireNonNull(files)) {
@@ -150,7 +151,7 @@ public class BackupThread extends Thread {
     }
 
     private void broadcast(String message, Style style, Object... parameters) {
-        if (ConfigHandler.sendMessages() && !this.quiet) {
+        if (CommonConfig.sendMessages() && !this.quiet) {
             this.server.execute(() -> {
                 this.server.getPlayerList().getPlayers().forEach(player -> {
                     if (player.hasPermissions(2)) {
@@ -159,7 +160,7 @@ public class BackupThread extends Thread {
                 });
             });
 
-            if (Mc2DiscordCompat.isLoaded() && ConfigHandler.mc2discord()) {
+            if (Mc2DiscordCompat.isLoaded() && CommonConfig.mc2discord()) {
                 Mc2DiscordCompat.announce(Component.translatable(message, parameters));
             }
         }
@@ -178,7 +179,7 @@ public class BackupThread extends Thread {
     private long makeWorldBackup() throws IOException {
         this.storageSource.checkLock();
         String fileName = this.storageSource.levelId + "_" + LocalDateTime.now().format(FORMATTER);
-        Path path = ConfigHandler.getOutputPath();
+        Path path = CommonConfig.getOutputPath();
 
         try {
             Files.createDirectories(Files.exists(path) ? path.toRealPath() : path);
@@ -196,7 +197,7 @@ public class BackupThread extends Thread {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     if (!file.endsWith("session.lock")) {
                         long lastModified = file.toFile().lastModified();
-                        if (!ConfigHandler.onlyModified() || lastModified - BackupThread.this.lastSaved > 0) {
+                        if (!CommonConfig.onlyModified() || lastModified - BackupThread.this.lastSaved > 0) {
                             String completePath = levelName.resolve(levelPath.relativize(file)).toString().replace('\\', '/');
                             ZipEntry zipentry = new ZipEntry(completePath);
                             zipStream.putNextEntry(zipentry);

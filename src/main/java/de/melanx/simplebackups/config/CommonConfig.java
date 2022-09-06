@@ -1,19 +1,20 @@
-package de.melanx.simplebackups;
+package de.melanx.simplebackups.config;
 
+import de.melanx.simplebackups.StorageSize;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class ConfigHandler {
+public class CommonConfig {
 
-    public static final ForgeConfigSpec COMMON_CONFIG;
-    private static final ForgeConfigSpec.Builder COMMON_BUILDER = new ForgeConfigSpec.Builder();
+    public static final ForgeConfigSpec CONFIG;
+    private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 
     static {
-        init(COMMON_BUILDER);
-        COMMON_CONFIG = COMMON_BUILDER.build();
+        init(BUILDER);
+        CONFIG = BUILDER.build();
     }
 
     private static ForgeConfigSpec.BooleanValue onlyModified;

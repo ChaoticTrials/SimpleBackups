@@ -2,6 +2,7 @@ package de.melanx.simplebackups;
 
 import de.melanx.simplebackups.commands.BackupCommand;
 import de.melanx.simplebackups.commands.PauseCommand;
+import de.melanx.simplebackups.config.ServerConfig;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -16,7 +17,7 @@ public class EventListener {
     @SubscribeEvent
     public void registerCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal(SimpleBackups.MODID)
-                .requires(stack -> stack.hasPermission(2))
+                .requires(stack -> ServerConfig.commandsCheatsDisabled() || stack.hasPermission(2))
                 .then(BackupCommand.register())
                 .then(PauseCommand.register()));
     }

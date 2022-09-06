@@ -1,6 +1,8 @@
 package de.melanx.simplebackups;
 
 import de.melanx.simplebackups.client.ClientEventHandler;
+import de.melanx.simplebackups.config.CommonConfig;
+import de.melanx.simplebackups.config.ServerConfig;
 import de.melanx.simplebackups.network.SimpleNetwork;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -23,7 +25,8 @@ public class SimpleBackups {
     private static final SimpleNetwork network = new SimpleNetwork();
 
     public SimpleBackups() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ConfigHandler.COMMON_CONFIG);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfig.CONFIG);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig.CONFIG);
         MinecraftForge.EVENT_BUS.register(new EventListener());
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
 
