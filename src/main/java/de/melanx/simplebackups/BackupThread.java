@@ -63,7 +63,7 @@ public class BackupThread extends Thread {
 
     public static boolean tryCreateBackup(MinecraftServer server) {
         BackupData backupData = BackupData.get(server);
-        if (!backupData.isPaused() && System.currentTimeMillis() - CommonConfig.getTimer() > backupData.getLastSaved()) {
+        if (CommonConfig.isEnabled() && !backupData.isPaused() && System.currentTimeMillis() - CommonConfig.getTimer() > backupData.getLastSaved()) {
             BackupThread thread = new BackupThread(server, false, backupData.getLastSaved());
             thread.start();
             backupData.updateSaveTime(System.currentTimeMillis());

@@ -17,6 +17,7 @@ public class CommonConfig {
         CONFIG = BUILDER.build();
     }
 
+    private static ForgeConfigSpec.BooleanValue enabled;
     private static ForgeConfigSpec.BooleanValue onlyModified;
     private static ForgeConfigSpec.IntValue backupsToKeep;
     private static ForgeConfigSpec.IntValue timer;
@@ -27,6 +28,8 @@ public class CommonConfig {
     private static ForgeConfigSpec.BooleanValue mc2discord;
 
     public static void init(ForgeConfigSpec.Builder builder) {
+        enabled = builder.comment("If set true, no backups are being made.")
+                .define("enabled", true);
         onlyModified = builder.comment("Should only changed files be backed up? Useful for large worlds. Keep in mind that old backups are required for a complete backup. Alternatively, you could run the command to create a new complete backup.")
                 .define("onlyModified", false);
         backupsToKeep = builder.comment("The max amount of backup files to keep.")
@@ -46,6 +49,10 @@ public class CommonConfig {
         mc2discord = builder.comment("Should backup notifications be sent to Discord by using mc2discord? (needs to be installed)")
                 .define("mc2discord", true);
         builder.pop();
+    }
+
+    public static boolean isEnabled() {
+        return enabled.get();
     }
 
     public static int getBackupsToKeep() {

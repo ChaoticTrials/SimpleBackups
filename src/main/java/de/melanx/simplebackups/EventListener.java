@@ -2,6 +2,7 @@ package de.melanx.simplebackups;
 
 import de.melanx.simplebackups.commands.BackupCommand;
 import de.melanx.simplebackups.commands.PauseCommand;
+import de.melanx.simplebackups.config.CommonConfig;
 import de.melanx.simplebackups.config.ServerConfig;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,7 +41,7 @@ public class EventListener {
 
     @SubscribeEvent
     public void onPlayerConnect(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity().getServer() != null) {
+        if (CommonConfig.isEnabled() && event.getEntity().getServer() != null) {
             SimpleBackups.network().pause(event.getEntity(), BackupData.get(event.getEntity().getServer()).isPaused());
         }
     }
