@@ -1,0 +1,5 @@
+{
+    "simplebackups.backup_started": "Backup iniciado...",
+    "simplebackups.backup_finished": "Backup concluído em %s (%s | %s)",
+    "simplebackups.backups_paused": "Backups pausados"
+}
