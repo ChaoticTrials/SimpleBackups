@@ -6,6 +6,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.zip.Deflater;
 
 public class CommonConfig {
 
@@ -21,6 +22,7 @@ public class CommonConfig {
     private static ForgeConfigSpec.BooleanValue onlyModified;
     private static ForgeConfigSpec.IntValue backupsToKeep;
     private static ForgeConfigSpec.IntValue timer;
+    private static ForgeConfigSpec.IntValue compressionLevel;
     private static ForgeConfigSpec.BooleanValue sendMessages;
     private static ForgeConfigSpec.ConfigValue<String> maxDiskSize;
     private static ForgeConfigSpec.ConfigValue<String> outputPath;
@@ -36,6 +38,8 @@ public class CommonConfig {
                 .defineInRange("backupsToKeep", 10, 1, Short.MAX_VALUE);
         timer = builder.comment("The time between two backups in minutes", "5 = each 5 minutes", "60 = each hour", "1440 = each day")
                 .defineInRange("timer", 120, 1, Short.MAX_VALUE);
+        compressionLevel = builder.comment("The compression level, 0 is no compression (less cpu usage) and takes a lot of space, 9 is best compression (most cpu usage) and takes less space. -1 is default")
+                .defineInRange("compressionLevel", Deflater.DEFAULT_COMPRESSION, Math.min(Deflater.DEFAULT_COMPRESSION, Deflater.NO_COMPRESSION), Deflater.BEST_COMPRESSION);
         sendMessages = builder.comment("Should message be sent when backup is in the making?")
                 .define("sendMessages", true);
         maxDiskSize = builder.comment("The max size of storage the backup folder. If it takes more storage, old files will be deleted.",
@@ -62,6 +66,10 @@ public class CommonConfig {
     // converts config value from milliseconds to minutes
     public static int getTimer() {
         return timer.get() * 60 * 1000;
+    }
+
+    public static int getCompressionLevel() {
+        return compressionLevel.get();
     }
 
     public static long getMaxDiskSize() {
