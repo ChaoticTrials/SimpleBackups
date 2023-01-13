@@ -30,7 +30,7 @@ public class CommonConfig {
     private static ForgeConfigSpec.BooleanValue mc2discord;
 
     public static void init(ForgeConfigSpec.Builder builder) {
-        enabled = builder.comment("If set true, no backups are being made.")
+        enabled = builder.comment("If set false, no backups are being made.")
                 .define("enabled", true);
         onlyModified = builder.comment("Should only changed files be backed up? Useful for large worlds. Keep in mind that old backups are required for a complete backup. Alternatively, you could run the command to create a new complete backup.")
                 .define("onlyModified", false);
