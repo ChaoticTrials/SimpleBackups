@@ -1,26 +1,28 @@
 name: Bug Report
-description: Report an issue with supported versions of SimpleBackups
+description: Report an issue with supported versions of Simple Backups
 labels: [ bug ]
 body:
-  - type: input
+  - type: dropdown
     id: mc-version
     attributes:
       label: Minecraft version
-      placeholder: eg. 1.18.1
+      options:
+        - 1.18.2
+        - 1.19.4
     validations:
       required: true
   - type: input
     id: mod-version
     attributes:
       label: Simple Backups version
-      placeholder: eg. 1.18.1-1.0.0
+      placeholder: eg. 1.19.4-2.2.0
     validations:
       required: true
   - type: input
     id: forge-version
     attributes:
       label: Forge version
-      placeholder: eg. 39.0.88
+      placeholder: eg. 45.0.1
     validations:
       required: true
   - type: input
