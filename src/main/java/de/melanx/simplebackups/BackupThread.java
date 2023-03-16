@@ -2,6 +2,7 @@ package de.melanx.simplebackups;
 
 import de.melanx.simplebackups.compat.Mc2DiscordCompat;
 import de.melanx.simplebackups.config.CommonConfig;
+import de.melanx.simplebackups.config.ServerConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.FileUtil;
@@ -154,7 +155,7 @@ public class BackupThread extends Thread {
         if (CommonConfig.sendMessages() && !this.quiet) {
             this.server.execute(() -> {
                 this.server.getPlayerList().getPlayers().forEach(player -> {
-                    if (player.hasPermissions(2)) {
+                    if (ServerConfig.messagesForEveryone() || player.hasPermissions(2)) {
                         player.sendSystemMessage(BackupThread.component(player, message, parameters).withStyle(style));
                     }
                 });
