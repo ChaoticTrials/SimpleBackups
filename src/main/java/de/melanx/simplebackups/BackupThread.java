@@ -30,10 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Objects;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -83,15 +80,15 @@ public class BackupThread extends Thread {
     public void deleteFiles() {
         File backups = ConfigHandler.getOutputPath().toFile();
         if (backups.isDirectory()) {
-            File[] files = backups.listFiles();
-            if (files != null && files.length >= ConfigHandler.getBackupsToKeep()) {
-                Arrays.sort(files, Comparator.comparingLong(File::lastModified));
-                while (files.length >= ConfigHandler.getBackupsToKeep()) {
-                    boolean deleted = files[0].delete();
-                    String name = files[0].getName();
+            List<File> files = new ArrayList<>(Arrays.stream(Objects.requireNonNull(backups.listFiles())).filter(File::isFile).toList());
+            if (files.size() >= ConfigHandler.getBackupsToKeep()) {
+                files.sort(Comparator.comparingLong(File::lastModified));
+                while (files.size() >= ConfigHandler.getBackupsToKeep()) {
+                    boolean deleted = files.get(0).delete();
+                    String name = files.get(0).getName();
                     if (deleted) {
+                        files.remove(0);
                         LOGGER.info("Successfully deleted \"" + name + "\"");
-                        files = Arrays.copyOfRange(files, 1, files.length);
                     }
                 }
             }
