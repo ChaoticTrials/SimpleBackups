@@ -1,8 +1,8 @@
 buildscript {
-    apply from: 'https://moddingx.github.io/ModUtils/v4/buildscript.gradle', to: buildscript
+    apply from: 'https://moddingx.github.io/ModUtils/v5/buildscript.gradle', to: buildscript
 }
 
-apply from: 'https://moddingx.github.io/ModUtils/v4/mod.gradle'
+apply from: 'https://moddingx.github.io/ModUtils/v5/mod.gradle'
 apply plugin: 'org.moddingx.modgradle.cursedep'
 
 dependencies {

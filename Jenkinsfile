@@ -5,7 +5,7 @@ pipeline {
     tools {
         jdk 'java17'
     }
-    environment { 
+    environment {
         MODGRADLE_CI = 'true'
     }
     stages {

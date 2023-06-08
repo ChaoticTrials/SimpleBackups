@@ -1,6 +1,7 @@
 package de.melanx.simplebackups;
 
 import de.melanx.simplebackups.compat.Mc2DiscordCompat;
+import de.melanx.simplebackups.config.BackupType;
 import de.melanx.simplebackups.config.CommonConfig;
 import de.melanx.simplebackups.config.ServerConfig;
 import net.minecraft.ChatFormatting;
@@ -59,8 +60,8 @@ public class BackupThread extends Thread {
             this.lastSaved = 0;
             this.fullBackup = true;
         } else {
-            this.lastSaved = backupData.getLastSaved();
-            this.fullBackup = !CommonConfig.onlyModified() || System.currentTimeMillis() - CommonConfig.getFullBackupTimer() > backupData.getLastFullBackup();
+            this.lastSaved = CommonConfig.backupType() == BackupType.MODIFIED_SINCE_LAST ? backupData.getLastSaved() : backupData.getLastFullBackup();
+            this.fullBackup = CommonConfig.backupType() == BackupType.FULL_BACKUPS || System.currentTimeMillis() - CommonConfig.getFullBackupTimer() > backupData.getLastFullBackup();
         }
         this.setName("SimpleBackups");
         this.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
