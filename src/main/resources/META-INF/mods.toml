@@ -10,6 +10,7 @@ displayName="Simple Backups"
 updateJSONURL="https://assets.melanx.de/updates/simple-backups.json"
 displayURL="https://www.curseforge.com/members/melanx/"
 authors="MelanX"
+displayTest="IGNORE_ALL_VERSION"
 description="""
 A simple mod to create scheduled backups.
 """
