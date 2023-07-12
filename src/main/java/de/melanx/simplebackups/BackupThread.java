@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -170,15 +171,17 @@ public class BackupThread extends Thread {
             });
 
             if (Mc2DiscordCompat.isLoaded() && CommonConfig.mc2discord()) {
-                Mc2DiscordCompat.announce(Component.translatable(message, parameters));
+                Mc2DiscordCompat.announce(BackupThread.component(null, message, parameters));
             }
         }
     }
 
-    public static MutableComponent component(ServerPlayer player, String key, Object... parameters) {
-        ConnectionData data = NetworkHooks.getConnectionData(player.connection.connection);
-        if (data != null && data.getModList().contains(SimpleBackups.MODID)) {
-            return Component.translatable(key, parameters);
+    public static MutableComponent component(@Nullable ServerPlayer player, String key, Object... parameters) {
+        if (player != null) {
+            ConnectionData data = NetworkHooks.getConnectionData(player.connection.connection);
+            if (data != null && data.getModList().contains(SimpleBackups.MODID)) {
+                return Component.translatable(key, parameters);
+            }
         }
 
         return Component.literal(String.format(ForgeI18n.getPattern(key), parameters));
