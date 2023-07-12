@@ -6,5 +6,5 @@ apply from: 'https://moddingx.github.io/ModUtils/v4/mod.gradle'
 apply plugin: 'org.moddingx.modgradle.cursedep'
 
 dependencies {
-    compileOnly curse.mod(325235, 4119891)
+    implementation curse.mod(325235, 4457983)
 }
