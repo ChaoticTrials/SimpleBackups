@@ -2,9 +2,16 @@ buildscript {
     apply from: 'https://moddingx.github.io/ModUtils/v5/buildscript.gradle', to: buildscript
 }
 
+apply plugin: 'net.minecraftforge.gradle'
+jarJar.enable()
 apply from: 'https://moddingx.github.io/ModUtils/v5/mod.gradle'
 apply plugin: 'org.moddingx.modgradle.cursedep'
 
 dependencies {
+    jarJar(group: 'org.tukaani', name: 'xz', version: '[1.0,2.0)') {
+        jarJar.pin(it, '1.9')
+    }
+
     compileOnly curse.mod(325235, 4119891)
+    implementation group: 'org.tukaani', name: 'xz', version: '1.9'
 }

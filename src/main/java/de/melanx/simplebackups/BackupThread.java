@@ -1,6 +1,7 @@
 package de.melanx.simplebackups;
 
 import de.melanx.simplebackups.compat.Mc2DiscordCompat;
+import de.melanx.simplebackups.compression.CompressionBase;
 import de.melanx.simplebackups.config.BackupType;
 import de.melanx.simplebackups.config.CommonConfig;
 import de.melanx.simplebackups.config.ServerConfig;
@@ -136,13 +137,13 @@ public class BackupThread extends Thread {
             Files.createDirectories(CommonConfig.getOutputPath());
             long start = System.currentTimeMillis();
             this.broadcast("simplebackups.backup_started", Style.EMPTY.withColor(ChatFormatting.GOLD));
-            long size = this.makeWorldBackup();
+            long size = CompressionBase.makeBackup(this.storageSource, this.fullBackup, this.lastSaved);
             long end = System.currentTimeMillis();
             String time = Timer.getTimer(end - start);
             BackupThread.saveStorageSize();
             this.broadcast("simplebackups.backup_finished", Style.EMPTY.withColor(ChatFormatting.GOLD), time, StorageSize.getFormattedSize(size), StorageSize.getFormattedSize(BackupThread.getOutputFolderSize()));
         } catch (IOException e) {
-            e.printStackTrace();
+            SimpleBackups.LOGGER.error("Failed to create backup", e);
         }
     }
 
@@ -185,55 +186,6 @@ public class BackupThread extends Thread {
         }
 
         return Component.literal(String.format(ForgeI18n.getPattern(key), parameters));
-    }
-
-    // vanilla copy with modifications
-    private long makeWorldBackup() throws IOException {
-        this.storageSource.checkLock();
-        String fileName = this.storageSource.levelId + "_" + LocalDateTime.now().format(FORMATTER);
-        Path path = CommonConfig.getOutputPath();
-
-        try {
-            Files.createDirectories(Files.exists(path) ? path.toRealPath() : path);
-        } catch (IOException ioexception) {
-            throw new RuntimeException(ioexception);
-        }
-
-        Path outputFile = path.resolve(FileUtil.findAvailableName(path, fileName, ".zip"));
-        final ZipOutputStream zipStream = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(outputFile)));
-        zipStream.setLevel(CommonConfig.getCompressionLevel());
-
-        try {
-            Path levelName = Paths.get(this.storageSource.levelId);
-            Path levelPath = this.storageSource.getWorldDir().resolve(this.storageSource.levelId);
-            Files.walkFileTree(levelPath, new SimpleFileVisitor<>() {
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    if (!file.endsWith("session.lock")) {
-                        long lastModified = file.toFile().lastModified();
-                        if (BackupThread.this.fullBackup || lastModified - BackupThread.this.lastSaved > 0) {
-                            String completePath = levelName.resolve(levelPath.relativize(file)).toString().replace('\\', '/');
-                            ZipEntry zipentry = new ZipEntry(completePath);
-                            zipStream.putNextEntry(zipentry);
-                            com.google.common.io.Files.asByteSource(file.toFile()).copyTo(zipStream);
-                            zipStream.closeEntry();
-                        }
-                    }
-
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException e) {
-            try {
-                zipStream.close();
-            } catch (IOException e1) {
-                e.addSuppressed(e1);
-            }
-
-            throw e;
-        }
-
-        zipStream.close();
-        return Files.size(outputFile);
     }
 
     private static class Timer {

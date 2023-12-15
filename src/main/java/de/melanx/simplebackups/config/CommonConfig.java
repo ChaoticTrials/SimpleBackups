@@ -1,6 +1,7 @@
 package de.melanx.simplebackups.config;
 
 import de.melanx.simplebackups.StorageSize;
+import de.melanx.simplebackups.compression.CompressionBase;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 import java.io.IOException;
@@ -27,6 +28,7 @@ public class CommonConfig {
     private static ForgeConfigSpec.BooleanValue sendMessages;
     private static ForgeConfigSpec.ConfigValue<String> maxDiskSize;
     private static ForgeConfigSpec.ConfigValue<String> outputPath;
+    private static ForgeConfigSpec.EnumValue<CompressionBase.BackupFormat> backupFormat;
 
     private static ForgeConfigSpec.BooleanValue mc2discord;
 
@@ -51,6 +53,8 @@ public class CommonConfig {
                 .define("maxDiskSize", "25 GB");
         outputPath = builder.comment("Used to define the output path.")
                 .define("outputPath", "simplebackups");
+        backupFormat = builder.comment()
+                        .defineEnum("backupFormat", CompressionBase.BackupFormat.ZIP);
 
         builder.push("mod_compat");
         mc2discord = builder.comment("Should backup notifications be sent to Discord by using mc2discord? (needs to be installed)")
@@ -99,6 +103,10 @@ public class CommonConfig {
 
     public static BackupType backupType() {
         return backupType.get();
+    }
+
+    public static CompressionBase.BackupFormat backupFormat() {
+        return backupFormat.get();
     }
 
     public static boolean sendMessages() {
