@@ -204,7 +204,7 @@ public class BackupThread extends Thread {
 
         try {
             Path levelName = Paths.get(this.storageSource.levelId);
-            Path levelPath = this.storageSource.getWorldDir().resolve(this.storageSource.levelId);
+            Path levelPath = this.storageSource.getWorldDir().resolve(this.storageSource.levelId).toRealPath();
             Files.walkFileTree(levelPath, new SimpleFileVisitor<>() {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     if (!file.endsWith("session.lock")) {
