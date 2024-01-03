@@ -17,6 +17,8 @@ public class BackupCommand implements Command<CommandSourceStack> {
                         .executes(new BackupCommand())
                         .then(Commands.argument("quiet", BoolArgumentType.bool())
                                 .executes(new BackupCommand())
+                                .then(Commands.argument("full", BoolArgumentType.bool())
+                                        .executes(new BackupCommand()))
                         )
                 );
     }
@@ -24,14 +26,25 @@ public class BackupCommand implements Command<CommandSourceStack> {
     @Override
     public int run(CommandContext<CommandSourceStack> context) {
         boolean quiet = false;
+        boolean full = true;
         try {
             quiet = BoolArgumentType.getBool(context, "quiet");
         } catch (IllegalArgumentException e) {
             // do nothing
         }
 
+        try {
+            full = BoolArgumentType.getBool(context, "full");
+        } catch (IllegalArgumentException e) {
+            // do nothing
+        }
+
         MinecraftServer server = context.getSource().getServer();
-        BackupThread.createBackup(server, quiet);
+        if (full) {
+            BackupThread.createFullBackup(server, quiet);
+        } else {
+            BackupThread.createNormalBackup(server, quiet);
+        }
         return 1;
     }
 }

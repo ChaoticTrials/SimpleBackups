@@ -71,12 +71,7 @@ public class BackupThread extends Thread {
     public static boolean tryCreateBackup(MinecraftServer server) {
         BackupData backupData = BackupData.get(server);
         if (CommonConfig.isEnabled() && !backupData.isPaused() && System.currentTimeMillis() - CommonConfig.getTimer() > backupData.getLastSaved()) {
-            BackupThread thread = new BackupThread(server, false, backupData);
-            thread.start();
-            backupData.updateSaveTime(System.currentTimeMillis());
-            if (thread.fullBackup) {
-                backupData.updateFullBackupTime(System.currentTimeMillis());
-            }
+            createNormalBackup(server, false, backupData);
 
             return true;
         }
@@ -84,9 +79,22 @@ public class BackupThread extends Thread {
         return false;
     }
 
-    public static void createBackup(MinecraftServer server, boolean quiet) {
+    public static void createFullBackup(MinecraftServer server, boolean quiet) {
         BackupThread thread = new BackupThread(server, quiet, null);
         thread.start();
+    }
+
+    public static void createNormalBackup(MinecraftServer server, boolean quiet) {
+        createNormalBackup(server, quiet, BackupData.get(server));
+    }
+
+    public static void createNormalBackup(MinecraftServer server, boolean quiet, BackupData backupData) {
+        BackupThread thread = new BackupThread(server, quiet, backupData);
+        thread.start();
+        backupData.updateSaveTime(System.currentTimeMillis());
+        if (thread.fullBackup) {
+            backupData.updateFullBackupTime(System.currentTimeMillis());
+        }
     }
 
     public void deleteFiles() {
