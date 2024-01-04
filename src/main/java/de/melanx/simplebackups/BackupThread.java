@@ -101,30 +101,58 @@ public class BackupThread extends Thread {
         File backups = CommonConfig.getOutputPath().toFile();
         if (backups.isDirectory()) {
             List<File> files = new ArrayList<>(Arrays.stream(Objects.requireNonNull(backups.listFiles())).filter(File::isFile).toList());
-            if (files.size() >= CommonConfig.getBackupsToKeep()) {
-                files.sort(Comparator.comparingLong(File::lastModified));
-                while (files.size() >= CommonConfig.getBackupsToKeep()) {
-                    boolean deleted = files.get(0).delete();
-                    String name = files.get(0).getName();
-                    if (deleted) {
-                        files.remove(0);
-                        LOGGER.info("Successfully deleted \"" + name + "\"");
+            BackupType backupType = CommonConfig.backupType();
+            if (backupType != BackupType.MODIFIED_SINCE_LAST) {
+                if (files.size() >= CommonConfig.getBackupsToKeep()) {
+                    // Delete the smallest files first if backup type is MODIFIED_SINCE_FULL
+                    files.sort(Comparator.comparingLong(backupType == BackupType.FULL_BACKUPS ? File::lastModified : File::length));
+                    while (files.size() >= CommonConfig.getBackupsToKeep()) {
+                        boolean deleted = files.get(0).delete();
+                        String name = files.get(0).getName();
+                        if (deleted) {
+                            files.remove(0);
+                            LOGGER.info("Successfully deleted \"" + name + "\"");
+                        }
                     }
                 }
+            } else if (files.size() >= CommonConfig.getBackupsToKeep()) {
+                LOGGER.info("Skipping deletion of files due to backup type being modified-since-last.");
             }
         }
     }
 
-    public static void saveStorageSize() {
+    public void saveStorageSize() {
         try {
+            BackupType backupType = CommonConfig.backupType();
+            // if a new full backup was made and the backup type is modified since full, delete all previous backups
+            if (backupType == BackupType.MODIFIED_SINCE_FULL && this.fullBackup) {
+                File backups = CommonConfig.getOutputPath().toFile();
+                if (backups.isDirectory()) {
+                    List<File> files = new ArrayList<>(Arrays.stream(Objects.requireNonNull(backups.listFiles())).filter(File::isFile).toList());
+                    files.sort(Comparator.comparingLong(File::lastModified));
+                    while (files.size() > 1) {
+                        boolean deleted = files.get(0).delete();
+                        String name = files.get(0).getName();
+                        if (deleted) {
+                            files.remove(0);
+                            LOGGER.info("Successfully deleted \"" + name + "\"");
+                        }
+                    }
+                }
+            }
             while (BackupThread.getOutputFolderSize() > CommonConfig.getMaxDiskSize()) {
+                if (backupType == BackupType.MODIFIED_SINCE_LAST) {
+                    LOGGER.error("Cannot delete old files to save disk space, backup type is modified-since-last.");
+                    return;
+                }
                 File[] files = CommonConfig.getOutputPath().toFile().listFiles();
                 if (Objects.requireNonNull(files).length == 1) {
                     LOGGER.error("Cannot delete old files to save disk space. Only one backup file left!");
                     return;
                 }
 
-                Arrays.sort(Objects.requireNonNull(files), Comparator.comparingLong(File::lastModified));
+                // Delete smallest files first if backup type is modified-since-full.
+                Arrays.sort(Objects.requireNonNull(files), Comparator.comparingLong(backupType == BackupType.FULL_BACKUPS ? File::lastModified : File::length));
                 File file = files[0];
                 String name = file.getName();
                 if (file.delete()) {
@@ -147,7 +175,7 @@ public class BackupThread extends Thread {
             long size = this.makeWorldBackup();
             long end = System.currentTimeMillis();
             String time = Timer.getTimer(end - start);
-            BackupThread.saveStorageSize();
+            this.saveStorageSize();
             this.broadcast("simplebackups.backup_finished", Style.EMPTY.withColor(ChatFormatting.GOLD), time, StorageSize.getFormattedSize(size), StorageSize.getFormattedSize(BackupThread.getOutputFolderSize()));
         } catch (IOException e) {
             e.printStackTrace();
