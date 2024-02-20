@@ -3,6 +3,7 @@
   "simplebackups.backup_finished": "Backup completed in %s (%s | %s)",
   "simplebackups.backups_paused": "Backups paused",
   "simplebackups.commands.only_modified": "Not only modified files are being backed up, please check your configuration file",
+  "simplebackups.commands.no_backups": "There is no backup to merge",
   "simplebackups.commands.is_merging": "A merge operation is already in progress",
   "simplebackups.commands.finished": "Merging backups completed successfully"
 }

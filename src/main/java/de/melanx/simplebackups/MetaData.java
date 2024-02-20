@@ -20,6 +20,7 @@ public class MetaData {
     private final Path metadataPath;
     private final JsonObject data;
     private final LinkedHashMap<String, MetaBackupType> backupMap;
+    private String lastFullBackup;
 
     public MetaData(Path backupPath) {
         this.backupPath = backupPath;
@@ -51,7 +52,9 @@ public class MetaData {
 
         try {
             String content = Files.readString(path);
-            return GSON.fromJson(content, JsonObject.class);
+            JsonObject json = GSON.fromJson(content, JsonObject.class);
+            this.lastFullBackup = json.get("last_full_backup").getAsString();
+            return json;
         } catch (IOException e) {
             LOGGER.error("Unable to read existing metadata file, creating new one and backup previous file", e);
             try {
@@ -174,6 +177,22 @@ public class MetaData {
         });
 
         return allBackups;
+    }
+
+    @Nullable
+    public String getLastFullBackup() {
+        return this.lastFullBackup;
+    }
+
+    public Set<Path> getChildrenFromFull(String fullBackupName) {
+        JsonArray childrenOfFullBackup = this.data.getAsJsonObject("full_backups").getAsJsonArray(fullBackupName);
+
+        Set<Path> children = new HashSet<>();
+        for (JsonElement child : childrenOfFullBackup) {
+            children.add(this.backupPath.resolve(child.getAsString()));
+        }
+
+        return children;
     }
 
     private static JsonObject createDefault() {
