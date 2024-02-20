@@ -5,7 +5,7 @@ issueTrackerURL="https://github.com/MelanX/SkyblockBuilder/issues"
 
 [[mods]]
 modId="simplebackups"
-version="${file.jarVersion}"
+version="${version}"
 displayName="Simple Backups"
 updateJSONURL="https://assets.melanx.de/updates/simple-backups.json"
 displayURL="https://www.curseforge.com/members/melanx/"

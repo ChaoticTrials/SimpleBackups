@@ -1,5 +1,7 @@
 package de.melanx.simplebackups;
 
+import de.melanx.simplebackups.commands.BackupCommand;
+import de.melanx.simplebackups.commands.MergeCommand;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -15,7 +17,8 @@ public class EventListener {
     public void registerCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal(SimpleBackups.MODID)
                 .requires(stack -> stack.hasPermission(2))
-                .then(BackupCommand.register()));
+                .then(BackupCommand.register())
+                .then(MergeCommand.register()));
     }
 
     @SubscribeEvent

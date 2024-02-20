@@ -1,4 +1,7 @@
 {
   "simplebackups.backup_started": "Backup started...",
-  "simplebackups.backup_finished": "Backup completed in %s (%s | %s)"
+  "simplebackups.backup_finished": "Backup completed in %s (%s | %s)",
+  "simplebackups.commands.only_modified": "Not only modified files are being backed up, please check your configuration file",
+  "simplebackups.commands.is_merging": "A merge operation is already in progress",
+  "simplebackups.commands.finished": "Merging backups completed successfully"
 }
