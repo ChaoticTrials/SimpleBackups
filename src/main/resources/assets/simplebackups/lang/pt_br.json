@@ -1,5 +1,8 @@
 {
     "simplebackups.backup_started": "Backup iniciado...",
     "simplebackups.backup_finished": "Backup concluído em %s (%s | %s)",
-    "simplebackups.backups_paused": "Backups pausados"
+  "simplebackups.backups_paused": "Backups pausados",
+  "simplebackups.commands.only_modified": "Não apenas arquivos modificados estão sendo salvos, por favor, verifique seu arquivo de configuração",
+  "simplebackups.commands.is_merging": "Uma operação de mesclagem já está em andamento",
+  "simplebackups.commands.finished": "Mesclagem de backups concluída com sucesso"
 }

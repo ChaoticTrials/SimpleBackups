@@ -12,6 +12,7 @@ public class BackupData extends SavedData {
     private long lastSaved;
     private long lastFullBackup;
     private boolean paused;
+    private boolean merging;
 
     private BackupData() {
         // use BackupData.get
@@ -29,6 +30,7 @@ public class BackupData extends SavedData {
         this.lastSaved = nbt.getLong("lastSaved");
         this.lastFullBackup = nbt.getLong("lastFullBackup");
         this.paused = nbt.getBoolean("paused");
+        this.merging = nbt.getBoolean("merging");
         return this;
     }
 
@@ -38,6 +40,7 @@ public class BackupData extends SavedData {
         nbt.putLong("lastSaved", this.lastSaved);
         nbt.putLong("lastFullBackup", this.lastFullBackup);
         nbt.putBoolean("paused", this.paused);
+        nbt.putBoolean("merging", this.merging);
         return nbt;
     }
 
@@ -66,5 +69,17 @@ public class BackupData extends SavedData {
     public void updateFullBackupTime(long time) {
         this.lastFullBackup = time;
         this.setDirty();
+    }
+
+    public boolean isMerging() {
+        return this.merging;
+    }
+
+    public void startMerging() {
+        this.merging = true;
+    }
+
+    public void stopMerging() {
+        this.merging = false;
     }
 }
