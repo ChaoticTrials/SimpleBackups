@@ -1,6 +1,7 @@
 package de.melanx.simplebackups;
 
 import de.melanx.simplebackups.commands.BackupCommand;
+import de.melanx.simplebackups.commands.MergeCommand;
 import de.melanx.simplebackups.commands.PauseCommand;
 import de.melanx.simplebackups.config.CommonConfig;
 import de.melanx.simplebackups.config.ServerConfig;
@@ -20,7 +21,8 @@ public class EventListener {
         event.getDispatcher().register(Commands.literal(SimpleBackups.MODID)
                 .requires(stack -> ServerConfig.commandsCheatsDisabled() || stack.hasPermission(2))
                 .then(BackupCommand.register())
-                .then(PauseCommand.register()));
+                .then(PauseCommand.register())
+                .then(MergeCommand.register()));
     }
 
     @SubscribeEvent
