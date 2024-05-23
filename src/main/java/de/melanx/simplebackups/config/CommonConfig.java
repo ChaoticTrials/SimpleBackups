@@ -27,6 +27,7 @@ public class CommonConfig {
     private static ForgeConfigSpec.BooleanValue sendMessages;
     private static ForgeConfigSpec.ConfigValue<String> maxDiskSize;
     private static ForgeConfigSpec.ConfigValue<String> outputPath;
+    private static ForgeConfigSpec.BooleanValue noPlayerBackups;
 
     private static ForgeConfigSpec.BooleanValue mc2discord;
 
@@ -51,6 +52,8 @@ public class CommonConfig {
                 .define("maxDiskSize", "25 GB");
         outputPath = builder.comment("Used to define the output path.")
                 .define("outputPath", "simplebackups");
+        noPlayerBackups = builder.comment("Create backups, even if nobody is online")
+                .define("noPlayerBackups", false);
 
         builder.push("mod_compat");
         mc2discord = builder.comment("Should backup notifications be sent to Discord by using mc2discord? (needs to be installed)")
@@ -95,6 +98,10 @@ public class CommonConfig {
         } catch (IOException e) {
             return Paths.get(outputPath.get());
         }
+    }
+
+    public static boolean doNoPlayerBackups() {
+        return noPlayerBackups.get();
     }
 
     public static BackupType backupType() {

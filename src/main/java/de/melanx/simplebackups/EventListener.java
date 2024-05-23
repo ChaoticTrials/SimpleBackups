@@ -30,7 +30,7 @@ public class EventListener {
         //noinspection ConstantConditions
         if (event.phase == TickEvent.Phase.END && !event.level.isClientSide
                 && event.level.getGameTime() % 20 == 0 && event.level == event.level.getServer().overworld()) {
-            if (!event.level.getServer().getPlayerList().getPlayers().isEmpty() || this.doBackup) {
+            if (!event.level.getServer().getPlayerList().getPlayers().isEmpty() || this.doBackup || CommonConfig.doNoPlayerBackups()) {
                 this.doBackup = false;
 
                 boolean done = BackupThread.tryCreateBackup(event.level.getServer());
