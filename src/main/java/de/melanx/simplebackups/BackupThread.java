@@ -4,6 +4,7 @@ import de.melanx.simplebackups.compat.Mc2DiscordCompat;
 import de.melanx.simplebackups.config.BackupType;
 import de.melanx.simplebackups.config.CommonConfig;
 import de.melanx.simplebackups.config.ServerConfig;
+import de.melanx.simplebackups.network.Pause;
 import net.minecraft.ChatFormatting;
 import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.FileUtil;
@@ -13,9 +14,8 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraftforge.common.ForgeI18n;
-import net.minecraftforge.network.ConnectionData;
-import net.minecraftforge.network.NetworkHooks;
+import net.neoforged.fml.i18n.I18nManager;
+import net.neoforged.neoforge.network.registration.NetworkRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,10 +98,10 @@ public class BackupThread extends Thread {
             if (files.size() >= CommonConfig.getBackupsToKeep()) {
                 files.sort(Comparator.comparingLong(File::lastModified));
                 while (files.size() >= CommonConfig.getBackupsToKeep()) {
-                    boolean deleted = files.get(0).delete();
-                    String name = files.get(0).getName();
+                    boolean deleted = files.getFirst().delete();
+                    String name = files.getFirst().getName();
                     if (deleted) {
-                        files.remove(0);
+                        files.removeFirst();
                         LOGGER.info("Successfully deleted \"{}\"", name);
                     }
                 }
@@ -180,13 +180,13 @@ public class BackupThread extends Thread {
 
     public static MutableComponent component(@Nullable ServerPlayer player, String key, Object... parameters) {
         if (player != null) {
-            ConnectionData data = NetworkHooks.getConnectionData(player.connection.connection);
-            if (data != null && data.getModList().contains(SimpleBackups.MODID)) {
+            //noinspection UnstableApiUsage
+            if (NetworkRegistry.hasChannel(player.connection.connection, null, Pause.ID)) {
                 return Component.translatable(key, parameters);
             }
         }
 
-        return Component.literal(String.format(ForgeI18n.getPattern(key), parameters));
+        return Component.literal(String.format(Optional.ofNullable(I18nManager.loadTranslations("en_us").get(key)).orElse(key), parameters));
     }
 
     // vanilla copy with modifications
@@ -202,39 +202,31 @@ public class BackupThread extends Thread {
         }
 
         Path outputFile = path.resolve(FileUtil.findAvailableName(path, fileName, ".zip"));
-        final ZipOutputStream zipStream = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(outputFile)));
-        zipStream.setLevel(CommonConfig.getCompressionLevel());
 
-        try {
+        try (ZipOutputStream zipStream = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(outputFile)))) {
+            zipStream.setLevel(CommonConfig.getCompressionLevel());
             Path levelName = Paths.get(this.storageSource.levelId);
             Path levelPath = this.storageSource.getWorldDir().resolve(this.storageSource.levelId).toRealPath();
             Files.walkFileTree(levelPath, new SimpleFileVisitor<>() {
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    if (!file.endsWith("session.lock")) {
-                        long lastModified = file.toFile().lastModified();
-                        if (BackupThread.this.fullBackup || lastModified - BackupThread.this.lastSaved > 0) {
-                            String completePath = levelName.resolve(levelPath.relativize(file)).toString().replace('\\', '/');
-                            ZipEntry zipentry = new ZipEntry(completePath);
-                            zipStream.putNextEntry(zipentry);
-                            com.google.common.io.Files.asByteSource(file.toFile()).copyTo(zipStream);
-                            zipStream.closeEntry();
-                        }
+                    if (file.endsWith("session.lock")) {
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                    long lastModified = file.toFile().lastModified();
+                    if (BackupThread.this.fullBackup || lastModified - BackupThread.this.lastSaved > 0) {
+                        String completePath = levelName.resolve(levelPath.relativize(file)).toString().replace('\\', '/');
+                        ZipEntry zipentry = new ZipEntry(completePath);
+                        zipStream.putNextEntry(zipentry);
+                        com.google.common.io.Files.asByteSource(file.toFile()).copyTo(zipStream);
+                        zipStream.closeEntry();
                     }
 
                     return FileVisitResult.CONTINUE;
                 }
             });
-        } catch (IOException e) {
-            try {
-                zipStream.close();
-            } catch (IOException e1) {
-                e.addSuppressed(e1);
-            }
-
-            throw e;
         }
 
-        zipStream.close();
         return Files.size(outputFile);
     }
 

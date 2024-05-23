@@ -1,21 +1,21 @@
 package de.melanx.simplebackups.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class ServerConfig {
 
-    public static final ForgeConfigSpec CONFIG;
-    private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+    public static final ModConfigSpec CONFIG;
+    private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
     static {
         init(BUILDER);
         CONFIG = BUILDER.build();
     }
 
-    private static ForgeConfigSpec.BooleanValue commandsCheatsDisabled;
-    private static ForgeConfigSpec.BooleanValue messagesForEveryone;
+    private static ModConfigSpec.BooleanValue commandsCheatsDisabled;
+    private static ModConfigSpec.BooleanValue messagesForEveryone;
 
-    public static void init(ForgeConfigSpec.Builder builder) {
+    public static void init(ModConfigSpec.Builder builder) {
         commandsCheatsDisabled = builder.comment("Should commands work without cheats enabled? Mainly recommended for single player, otherwise all users on servers can trigger commands.")
                 .define("commandsCheatsDisabled", false);
         messagesForEveryone = builder.comment("Should all users receive the backup message? Disable to only have users with permission level 2 and higher receive them.")

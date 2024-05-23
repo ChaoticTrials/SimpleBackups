@@ -1,8 +1,0 @@
-{
-  "pack": {
-    "description": "Simple Backups resources",
-    "pack_format": 15,
-    "forge:client_resources_pack_format": 15,
-    "forge:server_data_pack_format": 15
-  }
-}

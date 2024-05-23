@@ -1,7 +1,7 @@
 package de.melanx.simplebackups.config;
 
 import de.melanx.simplebackups.StorageSize;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -11,29 +11,30 @@ import java.util.zip.Deflater;
 
 public class CommonConfig {
 
-    public static final ForgeConfigSpec CONFIG;
-    private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+    public static final ModConfigSpec CONFIG;
+    private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
     private static final String DEFAULT_DISK_SIZE = "25 GB";
+
     static {
         init(BUILDER);
         CONFIG = BUILDER.build();
     }
 
-    private static ForgeConfigSpec.BooleanValue enabled;
-    private static ForgeConfigSpec.EnumValue<BackupType> backupType;
-    private static ForgeConfigSpec.IntValue fullBackupTimer;
-    private static ForgeConfigSpec.IntValue backupsToKeep;
-    private static ForgeConfigSpec.IntValue timer;
-    private static ForgeConfigSpec.IntValue compressionLevel;
-    private static ForgeConfigSpec.BooleanValue sendMessages;
-    private static ForgeConfigSpec.ConfigValue<String> maxDiskSize;
-    private static ForgeConfigSpec.ConfigValue<String> outputPath;
-    private static ForgeConfigSpec.BooleanValue noPlayerBackups;
-    private static ForgeConfigSpec.BooleanValue createSubDirs;
+    private static ModConfigSpec.BooleanValue enabled;
+    private static ModConfigSpec.EnumValue<BackupType> backupType;
+    private static ModConfigSpec.IntValue fullBackupTimer;
+    private static ModConfigSpec.IntValue backupsToKeep;
+    private static ModConfigSpec.IntValue timer;
+    private static ModConfigSpec.IntValue compressionLevel;
+    private static ModConfigSpec.BooleanValue sendMessages;
+    private static ModConfigSpec.ConfigValue<String> maxDiskSize;
+    private static ModConfigSpec.ConfigValue<String> outputPath;
+    private static ModConfigSpec.BooleanValue noPlayerBackups;
+    private static ModConfigSpec.BooleanValue createSubDirs;
 
-    private static ForgeConfigSpec.BooleanValue mc2discord;
+    private static ModConfigSpec.BooleanValue mc2discord;
 
-    public static void init(ForgeConfigSpec.Builder builder) {
+    public static void init(ModConfigSpec.Builder builder) {
         enabled = builder.comment("If set false, no backups are being made.")
                 .define("enabled", true);
         backupType = builder.comment("Defines the backup type.\n- FULL_BACKUPS - always creates full backups\n- MODIFIED_SINCE_LAST - only saves the files which changed since last (partial) backup\n- MODIFIED_SINCE_FULL - saves all files which changed after the last full backup")
@@ -58,7 +59,7 @@ public class CommonConfig {
                 .define("noPlayerBackups", false);
         createSubDirs = builder.comment("Should sub-directories be generated for each world?",
                         "Keep in mind that all configs above, including backupsToKeep and maxDiskSize, will be calculated for each sub directory.")
-                .define("createSubDirs", false); // todo 1.21 change to true
+                .define("createSubDirs", true);
 
         builder.push("mod_compat");
         mc2discord = builder.comment("Should backup notifications be sent to Discord by using mc2discord? (needs to be installed)")
@@ -95,11 +96,6 @@ public class CommonConfig {
         }
 
         return StorageSize.getBytes(s);
-    }
-
-    @Deprecated(forRemoval = true) // todo 1.21
-    public static Path getOutputPath() {
-        return CommonConfig.getOutputPath(null);
     }
 
     public static Path getOutputPath(@Nullable String levelId) {

@@ -29,7 +29,7 @@ public class PauseCommand implements Command<CommandSourceStack> {
     public int run(CommandContext<CommandSourceStack> context) {
         BackupData data = BackupData.get(context.getSource().getServer());
         data.setPaused(this.paused);
-        SimpleBackups.network().pause(this.paused);
+//        SimpleBackups.network().pause(this.paused);
         return this.paused ? 1 : 0;
     }
 }

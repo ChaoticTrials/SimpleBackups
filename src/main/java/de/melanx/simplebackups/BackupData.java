@@ -1,5 +1,6 @@
 package de.melanx.simplebackups;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -18,30 +19,30 @@ public class BackupData extends SavedData {
         // use BackupData.get
     }
 
-    public static BackupData get(ServerLevel level) {
-        return BackupData.get(level.getServer());
-    }
-
-    public static BackupData get(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(nbt -> new BackupData().load(nbt), BackupData::new, "simplebackups");
-    }
-
-    public BackupData load(@Nonnull CompoundTag nbt) {
-        this.lastSaved = nbt.getLong("lastSaved");
-        this.lastFullBackup = nbt.getLong("lastFullBackup");
-        this.paused = nbt.getBoolean("paused");
-        this.merging = nbt.getBoolean("merging");
-        return this;
-    }
-
     @Nonnull
     @Override
-    public CompoundTag save(@Nonnull CompoundTag nbt) {
+    public CompoundTag save(@Nonnull CompoundTag nbt, @Nonnull HolderLookup.Provider provider) {
         nbt.putLong("lastSaved", this.lastSaved);
         nbt.putLong("lastFullBackup", this.lastFullBackup);
         nbt.putBoolean("paused", this.paused);
         nbt.putBoolean("merging", this.merging);
         return nbt;
+    }
+
+    public static BackupData get(ServerLevel level) {
+        return BackupData.get(level.getServer());
+    }
+
+    public static BackupData get(MinecraftServer server) {
+        return server.overworld().getDataStorage().computeIfAbsent(BackupData.factory(), "simplebackups");
+    }
+
+    public BackupData load(@Nonnull CompoundTag nbt, @Nonnull HolderLookup.Provider provider) {
+        this.lastSaved = nbt.getLong("lastSaved");
+        this.lastFullBackup = nbt.getLong("lastFullBackup");
+        this.paused = nbt.getBoolean("paused");
+        this.merging = nbt.getBoolean("merging");
+        return this;
     }
 
     public void setPaused(boolean paused) {
@@ -72,7 +73,7 @@ public class BackupData extends SavedData {
     }
 
     public boolean isMerging() {
-        return merging;
+        return this.merging;
     }
 
     public void startMerging() {
@@ -81,5 +82,9 @@ public class BackupData extends SavedData {
 
     public void stopMerging() {
         this.merging = false;
+    }
+
+    private static SavedData.Factory<BackupData> factory() {
+        return new SavedData.Factory<>(BackupData::new, (nbt, provider) -> new BackupData().load(nbt, provider));
     }
 }

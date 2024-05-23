@@ -3,39 +3,52 @@ package de.melanx.simplebackups;
 import de.melanx.simplebackups.client.ClientEventHandler;
 import de.melanx.simplebackups.config.CommonConfig;
 import de.melanx.simplebackups.config.ServerConfig;
-import de.melanx.simplebackups.network.SimpleNetwork;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import de.melanx.simplebackups.network.Pause;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.network.handling.IPayloadHandler;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.stream.Stream;
 
 @Mod(SimpleBackups.MODID)
 public class SimpleBackups {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(SimpleBackups.class);
     public static final String MODID = "simplebackups";
-    private static final SimpleNetwork network = new SimpleNetwork();
 
-    public SimpleBackups() {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfig.CONFIG);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, ServerConfig.CONFIG);
-        MinecraftForge.EVENT_BUS.register(new EventListener());
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+    public SimpleBackups(IEventBus modEventBus, ModContainer modContainer, Dist dist) {
+        modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.CONFIG);
+        modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.CONFIG);
+        NeoForge.EVENT_BUS.register(new EventListener());
+        modEventBus.addListener(this::setup);
+        modEventBus.addListener(this::onRegisterPayloadHandler);
 
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.register(new ClientEventHandler()));
+        if (dist.isClient()) {
+            NeoForge.EVENT_BUS.register(new ClientEventHandler());
+        }
+    }
+
+    private void onRegisterPayloadHandler(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar(SimpleBackups.MODID)
+                .versioned("1.0")
+                .optional();
+
+        registrar.playToClient(Pause.TYPE, Pause.CODEC, Pause::handle);
     }
 
     private void setup(FMLCommonSetupEvent event) {
-        network.registerPackets();
-    }
-
-    public static SimpleNetwork network() {
-        return network;
     }
 }
