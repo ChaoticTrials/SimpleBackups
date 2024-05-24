@@ -79,7 +79,7 @@ public class MergeCommand implements Command<CommandSourceStack> {
                 Map<String, Path> zipFiles = new HashMap<>();
 
                 // Walk the file tree of the output path
-                Files.walkFileTree(CommonConfig.getOutputPath(), new SimpleFileVisitor<>() {
+                Files.walkFileTree(CommonConfig.getOutputPath(this.commandContext.getSource().getServer().storageSource.levelId), new SimpleFileVisitor<>() {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                         MergingThread.this.processFile(file, zipFiles);
@@ -92,7 +92,7 @@ public class MergeCommand implements Command<CommandSourceStack> {
             } catch (IOException e) {
                 throw new IllegalStateException("Error while processing backups", e);
             } finally {
-                commandContext.getSource().sendSuccess(Component.translatable("simplebackups.commands.finished"), false);
+                this.commandContext.getSource().sendSuccess(Component.translatable("simplebackups.commands.finished"), false);
             }
         }
 
