@@ -52,6 +52,7 @@ public class BackupThread extends Thread {
     private final long lastSaved;
     private final boolean fullBackup;
     private final LevelStorageSource.LevelStorageAccess storageSource;
+    private final Path backupPath;
 
     private BackupThread(@Nonnull MinecraftServer server, boolean quiet, BackupData backupData) {
         this.server = server;
@@ -66,6 +67,7 @@ public class BackupThread extends Thread {
         }
         this.setName("SimpleBackups");
         this.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
+        this.backupPath = CommonConfig.getOutputPath(this.storageSource.levelId);
     }
 
     public static boolean tryCreateBackup(MinecraftServer server) {
@@ -90,7 +92,7 @@ public class BackupThread extends Thread {
     }
 
     public void deleteFiles() {
-        File backups = CommonConfig.getOutputPath().toFile();
+        File backups = this.backupPath.toFile();
         if (backups.isDirectory()) {
             List<File> files = new ArrayList<>(Arrays.stream(Objects.requireNonNull(backups.listFiles())).filter(File::isFile).toList());
             if (files.size() >= CommonConfig.getBackupsToKeep()) {
@@ -100,17 +102,17 @@ public class BackupThread extends Thread {
                     String name = files.get(0).getName();
                     if (deleted) {
                         files.remove(0);
-                        LOGGER.info("Successfully deleted \"" + name + "\"");
+                        LOGGER.info("Successfully deleted \"{}\"", name);
                     }
                 }
             }
         }
     }
 
-    public static void saveStorageSize() {
+    public void saveStorageSize() {
         try {
-            while (BackupThread.getOutputFolderSize() > CommonConfig.getMaxDiskSize()) {
-                File[] files = CommonConfig.getOutputPath().toFile().listFiles();
+            while (this.getOutputFolderSize() > CommonConfig.getMaxDiskSize()) {
+                File[] files = this.backupPath.toFile().listFiles();
                 if (Objects.requireNonNull(files).length == 1) {
                     LOGGER.error("Cannot delete old files to save disk space. Only one backup file left!");
                     return;
@@ -120,7 +122,7 @@ public class BackupThread extends Thread {
                 File file = files[0];
                 String name = file.getName();
                 if (file.delete()) {
-                    LOGGER.info("Successfully deleted \"" + name + "\"");
+                    LOGGER.info("Successfully deleted \"{}\"", name);
                 }
             }
         } catch (NullPointerException | IOException e) {
@@ -133,21 +135,21 @@ public class BackupThread extends Thread {
         try {
             this.deleteFiles();
 
-            Files.createDirectories(CommonConfig.getOutputPath());
+            Files.createDirectories(this.backupPath);
             long start = System.currentTimeMillis();
             this.broadcast("simplebackups.backup_started", Style.EMPTY.withColor(ChatFormatting.GOLD));
             long size = this.makeWorldBackup();
             long end = System.currentTimeMillis();
             String time = Timer.getTimer(end - start);
-            BackupThread.saveStorageSize();
-            this.broadcast("simplebackups.backup_finished", Style.EMPTY.withColor(ChatFormatting.GOLD), time, StorageSize.getFormattedSize(size), StorageSize.getFormattedSize(BackupThread.getOutputFolderSize()));
+            this.saveStorageSize();
+            this.broadcast("simplebackups.backup_finished", Style.EMPTY.withColor(ChatFormatting.GOLD), time, StorageSize.getFormattedSize(size), StorageSize.getFormattedSize(this.getOutputFolderSize()));
         } catch (IOException e) {
-            e.printStackTrace();
+            SimpleBackups.LOGGER.error("Error backing up", e);
         }
     }
 
-    private static long getOutputFolderSize() throws IOException {
-        File[] files = CommonConfig.getOutputPath().toFile().listFiles();
+    private long getOutputFolderSize() throws IOException {
+        File[] files = this.backupPath.toFile().listFiles();
         long size = 0;
         try {
             for (File file : Objects.requireNonNull(files)) {
@@ -191,7 +193,7 @@ public class BackupThread extends Thread {
     private long makeWorldBackup() throws IOException {
         this.storageSource.checkLock();
         String fileName = this.storageSource.levelId + "_" + LocalDateTime.now().format(FORMATTER);
-        Path path = CommonConfig.getOutputPath();
+        Path path = CommonConfig.getOutputPath(this.storageSource.levelId);
 
         try {
             Files.createDirectories(Files.exists(path) ? path.toRealPath() : path);

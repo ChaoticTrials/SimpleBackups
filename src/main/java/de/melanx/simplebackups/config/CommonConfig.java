@@ -3,6 +3,7 @@ package de.melanx.simplebackups.config;
 import de.melanx.simplebackups.StorageSize;
 import net.minecraftforge.common.ForgeConfigSpec;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,7 +13,7 @@ public class CommonConfig {
 
     public static final ForgeConfigSpec CONFIG;
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
-
+    private static final String DEFAULT_DISK_SIZE = "25 GB";
     static {
         init(BUILDER);
         CONFIG = BUILDER.build();
@@ -28,6 +29,7 @@ public class CommonConfig {
     private static ForgeConfigSpec.ConfigValue<String> maxDiskSize;
     private static ForgeConfigSpec.ConfigValue<String> outputPath;
     private static ForgeConfigSpec.BooleanValue noPlayerBackups;
+    private static ForgeConfigSpec.BooleanValue createSubDirs;
 
     private static ForgeConfigSpec.BooleanValue mc2discord;
 
@@ -49,11 +51,14 @@ public class CommonConfig {
         maxDiskSize = builder.comment("The max size of storage the backup folder. If it takes more storage, old files will be deleted.",
                         "Needs to be written as <number><space><storage type>",
                         "Valid storage types: B, KB, MB, GB, TB")
-                .define("maxDiskSize", "25 GB");
+                .define("maxDiskSize", DEFAULT_DISK_SIZE);
         outputPath = builder.comment("Used to define the output path.")
                 .define("outputPath", "simplebackups");
         noPlayerBackups = builder.comment("Create backups, even if nobody is online")
                 .define("noPlayerBackups", false);
+        createSubDirs = builder.comment("Should sub-directories be generated for each world?",
+                        "Keep in mind that all configs above, including backupsToKeep and maxDiskSize, will be calculated for each sub directory.")
+                .define("createSubDirs", false); // todo 1.21 change to true
 
         builder.push("mod_compat");
         mc2discord = builder.comment("Should backup notifications be sent to Discord by using mc2discord? (needs to be installed)")
@@ -86,17 +91,24 @@ public class CommonConfig {
     public static long getMaxDiskSize() {
         String s = maxDiskSize.get();
         if (s.split(" ").length != 2) {
-            s = "25 GB";
+            s = DEFAULT_DISK_SIZE;
         }
 
         return StorageSize.getBytes(s);
     }
 
+    @Deprecated(forRemoval = true) // todo 1.21
     public static Path getOutputPath() {
+        return CommonConfig.getOutputPath(null);
+    }
+
+    public static Path getOutputPath(@Nullable String levelId) {
+        Path base = Paths.get(outputPath.get());
+        boolean withSubDir = levelId != null && !levelId.isEmpty() && createSubDirs.get();
         try {
-            return Paths.get(outputPath.get()).toRealPath();
+            return withSubDir ? base.toRealPath().resolve(levelId) : base.toRealPath();
         } catch (IOException e) {
-            return Paths.get(outputPath.get());
+            return withSubDir ? base.resolve(levelId) : base;
         }
     }
 
