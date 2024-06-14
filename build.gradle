@@ -217,6 +217,7 @@ if (!getProperty('project', 'modrinth').isEmpty()) {
         getArray(getProperty('requirements', 'modrinth')).each { dependencies.add(new com.modrinth.minotaur.dependencies.ModDependency(it, 'required')) }
         getArray(getProperty('optionals', 'modrinth')).each { dependencies.add(new com.modrinth.minotaur.dependencies.ModDependency(it, 'optional')) }
         gameVersions = getArray(getProperty('versions', 'modrinth', minecraft_version)).toList()
+        loaders = ['neoforge']
     }
 }
 
