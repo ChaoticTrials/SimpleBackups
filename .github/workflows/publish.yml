@@ -22,7 +22,7 @@ jobs:
       - name: Build and publish to maven
         uses: gradle/actions/setup-gradle@v3
         with:
-          arguments: clean build publish changelog curseforge modrinth
+          arguments: clean build publish curseforge modrinth
         env:
           GIT_COMMIT: ${{ github.sha }}
           GIT_PREVIOUS_COMMIT: ${{ github.event.before }}
