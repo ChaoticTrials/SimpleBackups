@@ -1,0 +1,17 @@
+name: Close stale issues and PRs
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          stale-issue-message: The required information were not provided yet. Thus, this was marked as stale.
+          close-issue-message: None of the required information was ever provided. If this is still an issue, feel free to reopen with the required information, or create a new issue.
+          only-labels: needs more info
+          days-before-stale: 7
+          days-before-close: 3

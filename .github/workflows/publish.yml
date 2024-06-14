@@ -1,0 +1,32 @@
+name: publish
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build and publish to maven
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: clean build publish changelog curseforge modrinth
+        env:
+          GIT_COMMIT: ${{ github.sha }}
+          GIT_PREVIOUS_COMMIT: ${{ github.event.before }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
