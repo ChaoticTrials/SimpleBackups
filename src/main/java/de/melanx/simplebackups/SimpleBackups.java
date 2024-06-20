@@ -4,24 +4,17 @@ import de.melanx.simplebackups.client.ClientEventHandler;
 import de.melanx.simplebackups.config.CommonConfig;
 import de.melanx.simplebackups.config.ServerConfig;
 import de.melanx.simplebackups.network.Pause;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
-import net.neoforged.neoforge.network.handling.IPayloadHandler;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.stream.Stream;
 
 @Mod(SimpleBackups.MODID)
 public class SimpleBackups {
@@ -50,5 +43,6 @@ public class SimpleBackups {
     }
 
     private void setup(FMLCommonSetupEvent event) {
+        // NO-OP
     }
 }

@@ -4,9 +4,10 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import de.melanx.simplebackups.BackupData;
-import de.melanx.simplebackups.SimpleBackups;
+import de.melanx.simplebackups.network.Pause;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 public class PauseCommand implements Command<CommandSourceStack> {
 
@@ -29,7 +30,7 @@ public class PauseCommand implements Command<CommandSourceStack> {
     public int run(CommandContext<CommandSourceStack> context) {
         BackupData data = BackupData.get(context.getSource().getServer());
         data.setPaused(this.paused);
-//        SimpleBackups.network().pause(this.paused);
+        PacketDistributor.sendToAllPlayers(new Pause(this.paused));
         return this.paused ? 1 : 0;
     }
 }

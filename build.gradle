@@ -23,7 +23,7 @@ plugins {
     id 'maven-publish'
     id 'net.darkhax.curseforgegradle' version '1.1.18'
     id 'com.modrinth.minotaur' version '2.+'
-    id 'net.neoforged.moddev' version '0.1.74'
+    id 'net.neoforged.moddev' version '0.1.94'
 }
 
 version = getVersion(minecraft_version + "-" + base_version, new URL(remote_maven + "/" + group.replace('.', '/') + "/" + name + "/maven-metadata.xml"))
@@ -51,6 +51,8 @@ neoForge {
         minecraftVersion = project.parchment_minecraft_version
         mappingsVersion = project.parchment_mappings_version
     }
+
+    accessTransformers.add('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
         client {
@@ -112,7 +114,6 @@ tasks.withType(ProcessResources).configureEach {
     }
 }
 
-// Example configuration to allow publishing using the maven-publish plugin
 publishing {
     publications {
         mavenJava(MavenPublication) {
