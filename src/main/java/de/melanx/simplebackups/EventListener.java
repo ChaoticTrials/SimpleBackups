@@ -7,8 +7,8 @@ import de.melanx.simplebackups.config.CommonConfig;
 import de.melanx.simplebackups.config.ServerConfig;
 import de.melanx.simplebackups.network.Pause;
 import net.minecraft.commands.Commands;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -31,9 +31,7 @@ public class EventListener {
 
     @SubscribeEvent
     public void onServerTick(LevelTickEvent.Post event) {
-        //noinspection ConstantConditions
-        Level level = event.getLevel();
-        if (!level.isClientSide
+        if (event.getLevel() instanceof ServerLevel level && !level.isClientSide
                 && level.getGameTime() % 20 == 0 && level == level.getServer().overworld()) {
             if (!level.getServer().getPlayerList().getPlayers().isEmpty() || this.doBackup || CommonConfig.doNoPlayerBackups()) {
                 this.doBackup = false;
