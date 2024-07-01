@@ -19,7 +19,21 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Check commit messages
+        id: check_commit_messages
+        run: |
+          commits=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:'%s')
+          echo "Commits since last push:"
+          echo "$commits"
+          if echo "$commits" | grep -qE '^\[meta\]'; then
+            echo "Only meta commits present, skip publishing"
+            echo "run_publish=false" >> $GITHUB_ENV
+          else
+            echo "run_publish=true" >> $GITHUB_ENV
+          fi
+
       - name: Build and publish to maven
+        if: env.run_publish == 'true'
         uses: gradle/actions/setup-gradle@v3
         with:
           arguments: clean build publish curseforge modrinth --no-configuration-cache
