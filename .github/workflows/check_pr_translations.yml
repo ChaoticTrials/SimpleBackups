@@ -1,0 +1,66 @@
+# This workflow was generated with the help of OpenAI's GPT.
+
+name: Check Localization Files
+on:
+  pull_request:
+    paths:
+      - 'src/main/resources/assets/**/lang/*.json'
+
+jobs:
+  check-localization:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Check localization files
+        run: |
+          PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          # Get the list of added or modified localization files
+          FILES=$(gh pr diff $PR_NUMBER --name-only)
+          # Initialize an array to store the missing keys
+          MISSING_KEYS=()
+          # Iterate over each file
+          for FILE in $FILES; do
+            # Check if the file is not the default English translation
+            if [[ $FILE != *"en_us.json" ]]; then
+              # Get the modid and language key from the file path
+              MODID=$(echo $FILE | cut -d'/' -f5)
+              LANGUAGE_KEY=$(echo $FILE | cut -d'/' -f7 | cut -d'.' -f1)
+              # Check if all keys from the default English translation are included in this file
+              KEYS=$(jq -n --argfile en src/main/resources/assets/$MODID/lang/en_us.json --argfile current $FILE '($en | keys) - ($current | keys)' )
+              if [[ $KEYS != "[]" ]]; then
+                MISSING_KEYS+=("$LANGUAGE_KEY: $KEYS")
+              fi
+            fi
+          done
+
+          # Post a comment on the pull request with the missing keys or a success message
+            if [[ ${#MISSING_KEYS[@]} -gt 0 ]]; then
+              echo "# 🚨 Missing translation keys 🚨" > review.md
+              for MISSING_KEY in "${MISSING_KEYS[@]}"; do
+                LANGUAGE=$(echo $MISSING_KEY | cut -d':' -f1)
+                KEYS=$(echo $MISSING_KEY | cut -d':' -f2 | jq -r '.[]')
+                echo "## **$LANGUAGE**" >> review.md
+                for KEY in $KEYS; do
+                  echo "- $KEY" >> review.md
+              done
+              echo "" >> review.md
+            done
+
+            # Request changes on the pull request
+            gh pr review $PR_NUMBER --request-changes --body-file review.md
+          else
+            echo "## ✅ All localization files have been checked and are complete! ✅" > review.md
+            echo "Waiting for approval by @MelanX" >> review.md
+
+            # Approve the pull request
+            gh pr review $PR_NUMBER --comment --body-file review.md
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
