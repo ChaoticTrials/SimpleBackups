@@ -19,10 +19,20 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Determine previous commit
+        id: determine_previous_commit
+        run: |
+          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            gitPrevHash=$(git rev-parse HEAD~1)
+          else
+            gitPrevHash=${{ github.event.before }}
+          fi
+          echo "GIT_PREVIOUS_COMMIT=$gitPrevHash" >> $GITHUB_ENV
+
       - name: Check commit messages
         id: check_commit_messages
         run: |
-          commits=$(git log ${{ github.event.before }}..${{ github.sha }} --pretty=format:'%s')
+          commits=$(git log $GIT_PREVIOUS_COMMIT..${{ github.sha }} --pretty=format:'%s')
           echo "Commits since last push:"
           echo "$commits"
           if echo "$commits" | grep -qE '^\[meta\]'; then
