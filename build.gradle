@@ -36,6 +36,8 @@ configurations {
 neoForge {
     version = project.neo_version
 
+    validateAccessTransformers = true
+
     parchment {
         minecraftVersion = project.parchment_minecraft_version
         mappingsVersion = project.parchment_mappings_version
