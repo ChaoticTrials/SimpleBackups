@@ -35,7 +35,11 @@ jobs:
           commits=$(git log $GIT_PREVIOUS_COMMIT..${{ github.sha }} --pretty=format:'%s')
           echo "Commits since last push:"
           echo "$commits"
-          if echo "$commits" | grep -qE '^\[meta\]'; then
+
+          total_commits=$(echo "$commits" | wc -l)
+          meta_commits=$(echo "$commits" | grep -E '^\[meta\]' | wc -l)
+
+          if [ "$total_commits" -eq "$meta_commits" ]; then
             echo "Only meta commits present, skip publishing"
             echo "run_publish=false" >> $GITHUB_ENV
           else
