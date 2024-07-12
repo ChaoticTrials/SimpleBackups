@@ -12,7 +12,7 @@ plugins {
     id 'maven-publish'
     id 'net.darkhax.curseforgegradle' version '1.1.18'
     id 'com.modrinth.minotaur' version '2.+'
-    id 'net.neoforged.moddev' version '[0.1,0.2)'
+    id 'net.neoforged.moddev' version '[1.0,1.1)'
 }
 
 version = getVersion(minecraft_version + "-" + base_version, new URL(remote_maven + "/" + group.replace('.', '/') + "/" + name + "/maven-metadata.xml"))
@@ -42,8 +42,6 @@ neoForge {
         minecraftVersion = project.parchment_minecraft_version
         mappingsVersion = project.parchment_mappings_version
     }
-
-    accessTransformers.add('src/main/resources/META-INF/accesstransformer.cfg')
 
     runs {
         client {

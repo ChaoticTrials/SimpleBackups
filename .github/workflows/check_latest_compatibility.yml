@@ -27,12 +27,12 @@ jobs:
 
       - name: Get latest NeoForge
         id: get-version
-        uses: ChaoticTrials/action-latest-forge@v1.0.0
+        uses: ChaoticTrials/action-latest-forge@v1
         with:
           minecraft-version: ${{ env.minecraft_version }}
 
       - name: Check compiling
-        uses: ChaoticTrials/action-test-different-property@v1.0.0
+        uses: ChaoticTrials/action-test-different-property@v1
         with:
           gradle-property: neo_version
           gradle-value: ${{ steps.get-version.outputs.version }}
