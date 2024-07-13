@@ -234,7 +234,7 @@ String changelog(Project project) {
 
     if (gitHash != null && gitPrevHash != null) {
         exec {
-            commandLine 'bash', '-c', "git log ${logFmt} ${gitPrevHash}...${gitHash} | grep -v '^- \\[meta\\]'"
+            commandLine 'bash', '-c', "git log ${logFmt} ${gitPrevHash}...${gitHash} | grep -v '^- \\[\\[meta\\]'"
             standardOutput = stdout
         }
     } else {
