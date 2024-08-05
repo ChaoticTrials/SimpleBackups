@@ -1,0 +1,8 @@
+{
+  "simplebackups.backup_started": "備份開始...",
+  "simplebackups.backup_finished": "備份已於 %s 內完成（%s｜%s）",
+  "simplebackups.backups_paused": "備份已暫停",
+  "simplebackups.commands.only_modified": "目前備份的對象不只是已修改的檔案，請檢查你的設定檔",
+  "simplebackups.commands.is_merging": "合併操作已在進行中",
+  "simplebackups.commands.finished": "備份合併已成功完成"
+}
