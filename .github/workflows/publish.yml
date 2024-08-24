@@ -12,12 +12,12 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
@@ -51,7 +51,7 @@ jobs:
 
       - name: Build and publish to maven
         if: env.run_publish == 'true'
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           arguments: clean build publish curseforge modrinth --no-configuration-cache
         env:
