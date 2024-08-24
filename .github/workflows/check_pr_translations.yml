@@ -5,7 +5,7 @@
 
 name: Check Localization Files
 on:
-  pull_request:
+  pull_request_target:
     paths:
       - 'src/main/resources/assets/**/lang/*.json'
 
@@ -20,13 +20,15 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 0
 
       - name: Check localization files
         run: |
           PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           # Get the list of added or modified localization files
-          FILES=$(gh pr diff $PR_NUMBER --name-only)
+          FILES=$(gh pr diff $PR_NUMBER --name-only | grep -E 'src/main/resources/assets/.*/lang/.*\.json')
           # Initialize an array to store the missing keys
           MISSING_KEYS=()
           # Iterate over each file
