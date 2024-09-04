@@ -51,8 +51,9 @@ jobs:
 
       - name: Build and publish to maven
         if: env.run_publish == 'true'
-        uses: gradle/actions/setup-gradle@v4
-        run: ./gradlew clean build publish curseforge modrinth --no-configuration-cache
+        run: |
+          chmod +x gradlew 
+          ./gradlew clean build publish curseforge modrinth --no-configuration-cache
         env:
           GIT_COMMIT: ${{ github.sha }}
           GIT_PREVIOUS_COMMIT: ${{ github.event.before }}
