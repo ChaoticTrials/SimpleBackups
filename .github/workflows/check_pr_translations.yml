@@ -24,11 +24,27 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 0
 
+      - name: Debug PR context
+        run: |
+          echo "Pull request number: ${{ github.event.pull_request.number }}"
+          echo "Repository full name: ${{ github.repository }}"
+          echo "Event path: $GITHUB_EVENT_PATH"
+
       - name: Check localization files
         run: |
-          PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          REPO_FULL_NAME="${{ github.repository }}"
+          # Ensure GitHub CLI is authenticated and correctly identifies the PR context
+          echo "Processing PR #$PR_NUMBER for repository $REPO_FULL_NAME"
+
           # Get the list of added or modified localization files
-          FILES=$(gh pr diff $PR_NUMBER --name-only | grep -E 'src/main/resources/assets/.*/lang/.*\.json')
+          FILES=$(gh pr diff "$PR_NUMBER" --repo "$REPO_FULL_NAME" --name-only | grep -E 'src/main/resources/assets/.*/lang/.*\.json' || true)
+          
+          if [[ -z "$FILES" ]]; then
+            echo "No localization files have been modified."
+            exit 0
+          fi
+
           # Initialize an array to store the missing keys
           MISSING_KEYS=()
           # Iterate over each file
@@ -47,26 +63,26 @@ jobs:
           done
 
           # Post a comment on the pull request with the missing keys or a success message
-            if [[ ${#MISSING_KEYS[@]} -gt 0 ]]; then
-              echo "# 🚨 Missing translation keys 🚨" > review.md
-              for MISSING_KEY in "${MISSING_KEYS[@]}"; do
-                LANGUAGE=$(echo $MISSING_KEY | cut -d':' -f1)
-                KEYS=$(echo $MISSING_KEY | cut -d':' -f2 | jq -r '.[]')
-                echo "## **$LANGUAGE**" >> review.md
-                for KEY in $KEYS; do
-                  echo "- $KEY" >> review.md
+          if [[ ${#MISSING_KEYS[@]} -gt 0 ]]; then
+            echo "# 🚨 Missing translation keys 🚨" > review.md
+            for MISSING_KEY in "${MISSING_KEYS[@]}"; do
+              LANGUAGE=$(echo $MISSING_KEY | cut -d':' -f1)
+              KEYS=$(echo $MISSING_KEY | cut -d':' -f2 | jq -r '.[]')
+              echo "## **$LANGUAGE**" >> review.md
+              for KEY in $KEYS; do
+                echo "- $KEY" >> review.md
               done
               echo "" >> review.md
             done
 
             # Request changes on the pull request
-            gh pr review $PR_NUMBER --request-changes --body-file review.md
+            gh pr review "$PR_NUMBER" --repo "$REPO_FULL_NAME" --request-changes --body-file review.md
           else
             echo "## ✅ All localization files have been checked and are complete! ✅" > review.md
             echo "Waiting for approval by @MelanX" >> review.md
 
             # Approve the pull request
-            gh pr review $PR_NUMBER --comment --body-file review.md
+            gh pr review "$PR_NUMBER" --repo "$REPO_FULL_NAME" --comment --body-file review.md
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
