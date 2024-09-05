@@ -31,6 +31,7 @@ public class CommonConfig {
     private static ModConfigSpec.ConfigValue<String> outputPath;
     private static ModConfigSpec.BooleanValue noPlayerBackups;
     private static ModConfigSpec.BooleanValue createSubDirs;
+    private static ModConfigSpec.BooleanValue useTickCounter;
 
     private static ModConfigSpec.BooleanValue mc2discord;
 
@@ -60,6 +61,9 @@ public class CommonConfig {
         createSubDirs = builder.comment("Should sub-directories be generated for each world?",
                         "Keep in mind that all configs above, including backupsToKeep and maxDiskSize, will be calculated for each sub directory.")
                 .define("createSubDirs", true);
+        useTickCounter = builder.comment("Use an internal tick counter instead of the real world time. The value of the timer will be converted to ticks. When the timer is over, the backup will be created.",
+                        "Keep in mind that lagging servers will result in larger gaps between two backups, e.g. 10 FPS in average will result in double the time set between backups.")
+                .define("useTickCounter", false);
 
         builder.push("mod_compat");
         mc2discord = builder.comment("Should backup notifications be sent to Discord by using mc2discord? (needs to be installed)")
@@ -118,6 +122,10 @@ public class CommonConfig {
 
     public static boolean sendMessages() {
         return sendMessages.get();
+    }
+
+    public static boolean useTickCounter() {
+        return useTickCounter.get();
     }
 
     public static boolean mc2discord() {

@@ -1,6 +1,5 @@
 package de.melanx.simplebackups.compat;
 
-import de.melanx.simplebackups.SimpleBackups;
 import net.minecraft.network.chat.Component;
 import net.neoforged.fml.ModList;
 
