@@ -13,6 +13,7 @@ public class BackupData extends SavedData {
     private long lastFullBackup;
     private boolean paused;
     private boolean merging;
+    private boolean usesTickCounter;
 
     private BackupData() {
         // use BackupData.get
@@ -31,6 +32,7 @@ public class BackupData extends SavedData {
         this.lastFullBackup = nbt.getLong("lastFullBackup");
         this.paused = nbt.getBoolean("paused");
         this.merging = nbt.getBoolean("merging");
+        this.usesTickCounter = nbt.getBoolean("usesTickCounter");
         return this;
     }
 
@@ -41,6 +43,7 @@ public class BackupData extends SavedData {
         nbt.putLong("lastFullBackup", this.lastFullBackup);
         nbt.putBoolean("paused", this.paused);
         nbt.putBoolean("merging", this.merging);
+        nbt.putBoolean("usesTickCounter", this.usesTickCounter);
         return nbt;
     }
 
@@ -72,7 +75,7 @@ public class BackupData extends SavedData {
     }
 
     public boolean isMerging() {
-        return merging;
+        return this.merging;
     }
 
     public void startMerging() {
@@ -81,5 +84,14 @@ public class BackupData extends SavedData {
 
     public void stopMerging() {
         this.merging = false;
+    }
+
+    public boolean usesTickCounter() {
+        return this.usesTickCounter;
+    }
+
+    public void setUsesTickCounter(boolean usesTickCounter) {
+        this.usesTickCounter = usesTickCounter;
+        this.setDirty();
     }
 }

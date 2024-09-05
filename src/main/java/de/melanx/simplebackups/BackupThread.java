@@ -63,7 +63,7 @@ public class BackupThread extends Thread {
             this.fullBackup = true;
         } else {
             this.lastSaved = CommonConfig.backupType() == BackupType.MODIFIED_SINCE_LAST ? backupData.getLastSaved() : backupData.getLastFullBackup();
-            this.fullBackup = CommonConfig.backupType() == BackupType.FULL_BACKUPS || System.currentTimeMillis() - CommonConfig.getFullBackupTimer() > backupData.getLastFullBackup();
+            this.fullBackup = CommonConfig.backupType() == BackupType.FULL_BACKUPS || (CommonConfig.useTickCounter() ? server.overworld().getGameTime() : System.currentTimeMillis()) - CommonConfig.getFullBackupTimer() > backupData.getLastFullBackup();
         }
         this.setName("SimpleBackups");
         this.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
@@ -72,18 +72,36 @@ public class BackupThread extends Thread {
 
     public static boolean tryCreateBackup(MinecraftServer server) {
         BackupData backupData = BackupData.get(server);
-        if (CommonConfig.isEnabled() && !backupData.isPaused() && System.currentTimeMillis() - CommonConfig.getTimer() > backupData.getLastSaved()) {
+        if (BackupThread.shouldRunBackup(server)) {
             BackupThread thread = new BackupThread(server, false, backupData);
             thread.start();
-            backupData.updateSaveTime(System.currentTimeMillis());
+            long currentTime = CommonConfig.useTickCounter() ? server.overworld().getGameTime() : System.currentTimeMillis();
+            backupData.updateSaveTime(currentTime);
             if (thread.fullBackup) {
-                backupData.updateFullBackupTime(System.currentTimeMillis());
+                backupData.updateFullBackupTime(currentTime);
             }
 
             return true;
         }
 
         return false;
+    }
+
+    public static boolean shouldRunBackup(MinecraftServer server) {
+        BackupData backupData = BackupData.get(server);
+        if (!CommonConfig.isEnabled() || backupData.isPaused()) {
+            return false;
+        }
+
+        if (CommonConfig.useTickCounter()) {
+            long gameTime = server.overworld().getGameTime();
+            long lastSaved = backupData.getLastSaved();
+            // convert timer from minutes into ticks
+            int timer = CommonConfig.getTimer() * 20 * 60;
+            return gameTime - lastSaved >= timer;
+        }
+
+        return System.currentTimeMillis() - CommonConfig.getTimer() > backupData.getLastSaved();
     }
 
     public static void createBackup(MinecraftServer server, boolean quiet) {
