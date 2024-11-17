@@ -1,10 +1,71 @@
+import org.w3c.dom.Document
+import org.w3c.dom.NodeList
+
+import javax.xml.parsers.DocumentBuilderFactory
+
 buildscript {
-    apply from: 'https://moddingx.github.io/ModUtils/v4/buildscript.gradle', to: buildscript
+    apply from: 'https://moddingx.github.io/ModUtils/v5/buildscript.gradle', to: buildscript
 }
 
-apply from: 'https://moddingx.github.io/ModUtils/v4/mod.gradle'
+apply from: 'https://moddingx.github.io/ModUtils/v5/mod.gradle'
 apply plugin: 'org.moddingx.modgradle.cursedep'
+apply plugin: 'maven-publish'
+mod['version'] = getVersion(mod.minecraft + "-" + mod.base_version, new URL(mod.remote_maven + "/" + group.replace('.', '/') + "/" + name + "/maven-metadata.xml"))
+project.version = mod.version
 
 dependencies {
     compileOnly curse.mod(325235, 3941002)
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+            artifact(jar) {
+                builtBy project.provider { project.tasks.named('reobfJar') }
+            }
+            if (mod.sources) {
+                artifact(sourceJar)
+            }
+            pom {
+                licenses {
+                    license {
+                        name = mod.license
+                        url = mod.license_url.toString()
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            url mod.remote_maven
+            credentials(PasswordCredentials)
+        }
+    }
+}
+publish.dependsOn('reobfJar')
+
+private static String getVersion(String baseVersion, URL url) {
+    try {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(connection.getInputStream());
+        NodeList versionNodes = doc.getElementsByTagName("version");
+        String latestVersion = null;
+        for (int i = 0; i < versionNodes.getLength(); i++) {
+            String version = versionNodes.item(i).getTextContent();
+            if (version.startsWith(baseVersion)) {
+                latestVersion = version;
+            }
+        }
+        if (latestVersion == null) {
+            return baseVersion + ".0";
+        }
+        return baseVersion + "." + (Integer.parseInt(latestVersion.substring(latestVersion.lastIndexOf('.') + 1)) + 1);
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
 }
