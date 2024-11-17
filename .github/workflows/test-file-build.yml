@@ -24,6 +24,7 @@ jobs:
         run: |
           chmod +x gradlew 
           ./gradlew build
+
       - name: Get current branch name
         id: get_branch
         run: echo "branch_name=${GITHUB_REF#refs/heads/}" | tr / - >> $GITHUB_ENV
