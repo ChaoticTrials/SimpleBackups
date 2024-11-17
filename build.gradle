@@ -11,6 +11,12 @@ apply from: 'https://moddingx.github.io/ModUtils/v5/mod.gradle'
 apply plugin: 'org.moddingx.modgradle.cursedep'
 apply plugin: 'maven-publish'
 mod['version'] = getVersion(mod.minecraft + "-" + mod.base_version, new URL(mod.remote_maven + "/" + group.replace('.', '/') + "/" + name + "/maven-metadata.xml"))
+
+def branchName = getBranchName()
+if (branchName) {
+    mod["version"] = "${mod.version}-${branchName}"
+}
+
 project.version = mod.version
 
 dependencies {
@@ -74,4 +80,15 @@ private static String getVersion(String baseVersion, URL url) {
     } catch (Exception e) {
         throw new RuntimeException(e);
     }
+}
+
+static def getBranchName() {
+    def branch = 'git rev-parse --abbrev-ref HEAD'.execute().text.trim();
+
+    if (branch.startsWith("issue/") || branch.startsWith("pr/") ||
+            branch.startsWith("fix/") || branch.startsWith("feature/")) {
+        branch = branch.replace('/', '_');
+    }
+
+    return branch;
 }
