@@ -6,12 +6,14 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import de.melanx.simplebackups.BackupData;
+import de.melanx.simplebackups.MetaData;
 import de.melanx.simplebackups.config.BackupType;
 import de.melanx.simplebackups.config.CommonConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 
+import javax.annotation.Nonnull;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,10 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -80,13 +79,28 @@ public class MergeCommand implements Command<CommandSourceStack> {
                 Map<String, Path> zipFiles = new HashMap<>();
 
                 // Walk the file tree of the output path
-                Files.walkFileTree(CommonConfig.getOutputPath(this.commandContext.getSource().getServer().storageSource.levelId), new SimpleFileVisitor<>() {
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                        MergingThread.this.processFile(file, zipFiles);
-                        return FileVisitResult.CONTINUE;
-                    }
-                });
+                Path outputPath = CommonConfig.getOutputPath(this.commandContext.getSource().getServer().storageSource.levelId);
+                MetaData metaData = new MetaData(outputPath);
+
+                String lastFullBackup = metaData.getLastFullBackup();
+                if (lastFullBackup == null) {
+                    this.commandContext.getSource().sendFailure(Component.translatable("simplebackups.commands.no_backups"));
+                    return;
+                }
+
+                Set<Path> relevantBackups = metaData.getChildrenFromFull(lastFullBackup);
+                relevantBackups.add(outputPath.resolve(lastFullBackup));
+
+                for (Path child : relevantBackups) {
+                    Files.walkFileTree(child, new SimpleFileVisitor<>() {
+                        @Nonnull
+                        @Override
+                        public FileVisitResult visitFile(Path file, @Nonnull BasicFileAttributes attrs) throws IOException {
+                            MergingThread.this.processFile(file, zipFiles);
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+                }
 
                 // Write the merged zip file
                 this.writeMergedZipFile(zos, zipFiles);

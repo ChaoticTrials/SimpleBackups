@@ -53,6 +53,7 @@ public class BackupThread extends Thread {
     private final boolean fullBackup;
     private final LevelStorageSource.LevelStorageAccess storageSource;
     private final Path backupPath;
+    private final MetaData metadata;
 
     private BackupThread(@Nonnull MinecraftServer server, boolean quiet, BackupData backupData) {
         this.server = server;
@@ -68,6 +69,7 @@ public class BackupThread extends Thread {
         this.setName("SimpleBackups");
         this.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
         this.backupPath = CommonConfig.getOutputPath(this.storageSource.levelId);
+        this.metadata = new MetaData(this.backupPath);
     }
 
     public static boolean tryCreateBackup(MinecraftServer server) {
@@ -151,7 +153,7 @@ public class BackupThread extends Thread {
     @Override
     public void run() {
         try {
-            this.deleteFiles();
+            this.metadata.pruneOldBackups(CommonConfig.getBackupsToKeep());
 
             Files.createDirectories(this.backupPath);
             long start = System.currentTimeMillis();
@@ -211,6 +213,9 @@ public class BackupThread extends Thread {
     private long makeWorldBackup() throws IOException {
         this.storageSource.checkLock();
         String fileName = this.storageSource.levelId + "_" + LocalDateTime.now().format(FORMATTER);
+        if (this.fullBackup && CommonConfig.backupType() != BackupType.FULL_BACKUPS) {
+            fileName += "_full";
+        }
         Path path = CommonConfig.getOutputPath(this.storageSource.levelId);
 
         try {
@@ -219,7 +224,8 @@ public class BackupThread extends Thread {
             throw new RuntimeException(ioexception);
         }
 
-        Path outputFile = path.resolve(FileUtil.findAvailableName(path, fileName, ".zip"));
+        String backupFileName = FileUtil.findAvailableName(path, fileName, ".zip");
+        Path outputFile = path.resolve(backupFileName);
         final ZipOutputStream zipStream = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(outputFile)));
         zipStream.setLevel(CommonConfig.getCompressionLevel());
 
@@ -253,6 +259,7 @@ public class BackupThread extends Thread {
         }
 
         zipStream.close();
+        this.metadata.addBackup(backupFileName, this.fullBackup);
         return Files.size(outputFile);
     }
 
