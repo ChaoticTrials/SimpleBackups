@@ -55,7 +55,7 @@ jobs:
               MODID=$(echo $FILE | cut -d'/' -f5)
               LANGUAGE_KEY=$(echo $FILE | cut -d'/' -f7 | cut -d'.' -f1)
               # Check if all keys from the default English translation are included in this file
-              KEYS=$(jq -n --argfile en src/main/resources/assets/$MODID/lang/en_us.json --argfile current $FILE '($en | keys) - ($current | keys)' )
+              KEYS=$(jq -n --slurpfile en src/main/resources/assets/$MODID/lang/en_us.json --slurpfile current $FILE '($en[0] | keys) - ($current[0] | keys)' )
               if [[ $KEYS != "[]" ]]; then
                 MISSING_KEYS+=("$LANGUAGE_KEY: $KEYS")
               fi
