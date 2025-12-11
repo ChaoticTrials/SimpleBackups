@@ -67,7 +67,7 @@ public class EventListener {
         if (event.getEntity() instanceof ServerPlayer player) {
             //noinspection ConstantConditions
             if (player.getServer().getPlayerList().getPlayers().isEmpty()) {
-                this.doBackup = true;
+                this.doBackup = !(CommonConfig.noPlayerBackupCount() == 0 || BackupData.get(player.serverLevel()).backupsSinceLastPlayerJoined() >= CommonConfig.noPlayerBackupCount());
             }
         }
     }
