@@ -15,6 +15,7 @@ public class BackupData extends SavedData {
     private boolean paused;
     private boolean merging;
     private boolean usesTickCounter;
+    private int backupsSinceLastPlayerJoined;
 
     private BackupData() {
         // use BackupData.get
@@ -28,6 +29,7 @@ public class BackupData extends SavedData {
         nbt.putBoolean("paused", this.paused);
         nbt.putBoolean("merging", this.merging);
         nbt.putBoolean("usesTickCounter", this.usesTickCounter);
+        nbt.putInt("backupsSinceLastPlayerJoined", this.backupsSinceLastPlayerJoined);
         return nbt;
     }
 
@@ -45,6 +47,7 @@ public class BackupData extends SavedData {
         this.paused = nbt.getBoolean("paused");
         this.merging = nbt.getBoolean("merging");
         this.usesTickCounter = nbt.getBoolean("usesTickCounter");
+        this.backupsSinceLastPlayerJoined = nbt.getInt("backupsSinceLastPlayerJoined");
         return this;
     }
 
@@ -72,6 +75,24 @@ public class BackupData extends SavedData {
 
     public void updateFullBackupTime(long time) {
         this.lastFullBackup = time;
+        this.setDirty();
+    }
+
+    public int backupsSinceLastPlayerJoined() {
+        return this.backupsSinceLastPlayerJoined;
+    }
+
+    public void incrementBackupsSinceLastPlayerJoined() {
+        this.backupsSinceLastPlayerJoined++;
+        this.setDirty();
+    }
+
+    public void resetBackupsSinceLastPlayerJoined() {
+        if (this.backupsSinceLastPlayerJoined == 0) {
+            return;
+        }
+
+        this.backupsSinceLastPlayerJoined = 0;
         this.setDirty();
     }
 

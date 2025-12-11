@@ -13,6 +13,8 @@
   "simplebackups.configuration.section.simplebackups.common.experimental.toml": "Experimental settings",
   "simplebackups.configuration.backupChainsToKeep": "Backup Chains to keep",
   "simplebackups.configuration.noPlayerBackups": "Backups without Players",
+  "simplebackups.configuration.noPlayerBackupCount": "No Player Backup Count",
+  "simplebackups.configuration.noPlayerBackupTimer": "No Player Backup Timer",
   "simplebackups.configuration.messagesForEveryone": "Messages for Everyone",
   "simplebackups.configuration.createSubDirs": "Create subdirectories",
   "simplebackups.configuration.timer": "Timer",

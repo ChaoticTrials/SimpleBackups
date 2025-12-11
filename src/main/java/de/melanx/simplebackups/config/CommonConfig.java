@@ -34,6 +34,8 @@ public class CommonConfig {
     private static ModConfigSpec.ConfigValue<String> maxDiskSize;
     private static ModConfigSpec.ConfigValue<String> outputPath;
     private static ModConfigSpec.BooleanValue noPlayerBackups;
+    private static ModConfigSpec.IntValue noPlayerBackupCount;
+    private static ModConfigSpec.IntValue noPlayerBackupTimer;
     private static ModConfigSpec.BooleanValue createSubDirs;
     private static ModConfigSpec.BooleanValue useTickCounter;
     private static ModConfigSpec.BooleanValue collectErrors;
@@ -77,6 +79,10 @@ public class CommonConfig {
                 .define("outputPath", "simplebackups");
         noPlayerBackups = builder.comment("Create backups, even if nobody is online")
                 .define("noPlayerBackups", false);
+        noPlayerBackupCount = builder.comment("How many backups should be created after the last player left? Set to 0 to disable.")
+                .defineInRange("noPlayerBackupCount", 1, 0, Integer.MAX_VALUE);
+        noPlayerBackupTimer = builder.comment("The time between two backups when no player is online. 0 means the same as the \"timer\" setting.")
+                .defineInRange("noPlayerBackupTimer", 0, 0, Integer.MAX_VALUE);
         createSubDirs = builder.comment("Should sub-directories be generated for each world?",
                         "Keep in mind that all configs above, including backupsToKeep and maxDiskSize, will be calculated for each sub directory.")
                 .define("createSubDirs", true);
@@ -126,9 +132,19 @@ public class CommonConfig {
         return ExperimentalConfig.isEnabled() ? ExperimentalConfig.backupChainsToKeep() : backupsToKeep.get();
     }
 
+    @Deprecated
     // converts config value from milliseconds to minutes
     public static long getTimer() {
-        return (long) timer.get() * 60 * 1000;
+        return CommonConfig.getTimer(true);
+    }
+
+    public static long getTimer(boolean arePlayersOnline) {
+        int i = noPlayerBackupTimer.get();
+        if (i == 0) {
+            i = timer.get();
+        }
+
+        return (long) (arePlayersOnline ? timer.get() : i) * 60 * 1000;
     }
 
     // converts config value from milliseconds to minutes
@@ -161,6 +177,10 @@ public class CommonConfig {
 
     public static boolean doNoPlayerBackups() {
         return noPlayerBackups.get();
+    }
+
+    public static int noPlayerBackupCount() {
+        return noPlayerBackupCount.get();
     }
 
     public static BackupType backupType() {

@@ -108,15 +108,17 @@ public class BackupThread extends Thread {
             return false;
         }
 
+        boolean arePlayersOnline = !server.getPlayerList().getPlayers().isEmpty();
+
         if (CommonConfig.useTickCounter()) {
             long gameTime = server.overworld().getGameTime();
             long lastSaved = backupData.getLastSaved();
             // convert timer from minutes into ticks
-            long timer = CommonConfig.getTimer() * 20 * 60;
+            long timer = CommonConfig.getTimer(arePlayersOnline) * 20 * 60;
             return gameTime - lastSaved >= timer;
         }
 
-        return System.currentTimeMillis() - CommonConfig.getTimer() > backupData.getLastSaved();
+        return System.currentTimeMillis() - CommonConfig.getTimer(arePlayersOnline) > backupData.getLastSaved();
     }
 
     public static void createBackup(MinecraftServer server, boolean quiet) {
