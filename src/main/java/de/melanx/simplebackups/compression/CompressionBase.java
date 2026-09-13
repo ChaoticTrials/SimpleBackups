@@ -65,7 +65,7 @@ public abstract class CompressionBase {
             }
 
             if (doPreCopy) {
-                tempDir = Files.createTempDirectory("simplebackups-precopy-");
+                tempDir = Files.createTempDirectory(backupPath, "simplebackups-precopy-");
                 compressor.copyToTemp(levelPath, tempDir);
                 sourceDir = tempDir;
             }
