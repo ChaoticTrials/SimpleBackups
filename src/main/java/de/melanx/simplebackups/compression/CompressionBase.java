@@ -2,6 +2,7 @@ package de.melanx.simplebackups.compression;
 
 import de.melanx.simplebackups.BackupResult;
 import de.melanx.simplebackups.SimpleBackups;
+import de.melanx.simplebackups.StorageSize;
 import de.melanx.simplebackups.ToolsLoader;
 import de.melanx.simplebackups.config.CommonConfig;
 import de.melanx.simplebackups.exception.NotEnoughDiskSpaceException;
@@ -94,7 +95,7 @@ public abstract class CompressionBase {
         Files.walkFileTree(source, new PreCopyFileVisitor(source, dest));
         long end = System.currentTimeMillis() - start;
 
-        SimpleBackups.LOGGER.info("Pre-copy took {}ms for {} Bytes", end, Files.size(source));
+        SimpleBackups.LOGGER.info("Pre-copy took {}ms for {} Bytes", end, StorageSize.getFolderSize(source));
     }
 
     protected final void deleteTempDir(Path tempDir) {

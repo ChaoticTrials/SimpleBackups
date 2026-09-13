@@ -39,7 +39,6 @@ import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class BackupThread extends Thread {
 
@@ -202,7 +201,7 @@ public class BackupThread extends Thread {
                 this.saveStorageSize();
 
                 this.broadcast("simplebackups.backup_finished", Style.EMPTY.withColor(backupResult.hasErrors() ? ChatFormatting.YELLOW : ChatFormatting.GOLD),
-                        time, StorageSize.getFormattedSize(backupFileSize), StorageSize.getFormattedSize(this.getOutputFolderSize()));
+                        time, StorageSize.getFormattedSize(backupFileSize), StorageSize.getFormattedSize(StorageSize.getFolderSize(this.backupPath)));
 
                 if (backupResult.hasErrors()) {
                     MutableComponent erroredFiles = Component.literal(backupResult.errors().stream()
@@ -240,29 +239,6 @@ public class BackupThread extends Thread {
         }
 
         return latestChain.createChild();
-    }
-
-    private long getOutputFolderSize() {
-        if (!Files.exists(this.backupPath)) {
-            return 0;
-        }
-
-        try (Stream<Path> stream = Files.walk(this.backupPath)) {
-            return stream
-                    .filter(Files::isRegularFile)
-                    .mapToLong(path -> {
-                        try {
-                            return Files.size(path);
-                        } catch (IOException e) {
-                            LOGGER.warn("Failed to get size of {}", path, e);
-                            return 0L;
-                        }
-                    })
-                    .sum();
-        } catch (IOException e) {
-            LOGGER.warn("Failed to get size of backup folder", e);
-            return 0L;
-        }
     }
 
     private void broadcast(String message, Style style, Object... parameters) {

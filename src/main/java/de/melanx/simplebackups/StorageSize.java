@@ -1,6 +1,10 @@
 package de.melanx.simplebackups;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 public enum StorageSize {
     B(0),
@@ -40,6 +44,29 @@ public enum StorageSize {
         StorageSize size = StorageSize.getSizeFor(bytes);
         double small = bytes / size.sizeInBytes;
         return String.format("%.1f %s", small, size.postfix);
+    }
+
+    public static long getFolderSize(Path folderPath) {
+        if (!Files.exists(folderPath)) {
+            return 0;
+        }
+
+        try (Stream<Path> stream = Files.walk(folderPath)) {
+            return stream
+                    .filter(Files::isRegularFile)
+                    .mapToLong(path -> {
+                        try {
+                            return Files.size(path);
+                        } catch (IOException e) {
+                            SimpleBackups.LOGGER.warn("Failed to get size of {}", path, e);
+                            return 0L;
+                        }
+                    })
+                    .sum();
+        } catch (IOException e) {
+            SimpleBackups.LOGGER.warn("Failed to get size of {}", folderPath, e);
+            return 0L;
+        }
     }
 
     public StorageSize getLower() {
