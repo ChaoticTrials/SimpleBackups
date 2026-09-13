@@ -78,19 +78,7 @@ public class BackupChain {
     }
 
     public long getFileSize() {
-        try {
-            return Files.walk(this.parentFolder).filter(Files::isRegularFile).mapToLong(path -> {
-                try {
-                    return Files.size(path);
-                } catch (IOException e) {
-                    SimpleBackups.LOGGER.warn("Failed to get size of {}", path, e);
-                    return 0;
-                }
-            }).sum();
-        } catch (IOException e) {
-            SimpleBackups.LOGGER.warn("Failed to get size of {}", this.parentFolder, e);
-            return 0;
-        }
+        return StorageSize.getFolderSize(this.parentFolder);
     }
 
     public void deleteFiles() {
