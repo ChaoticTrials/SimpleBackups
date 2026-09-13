@@ -1,5 +1,5 @@
 plugins {
-    id 'org.moddingx.modgradle.meta' version '5.1.2'
+    id 'org.moddingx.modgradle.meta' version '5.1.5'
 }
 
 repositories {
@@ -69,6 +69,7 @@ mod.configure {
     upload {
         all {
             type releaseType
+            environmentType 'client_and_server_optional'
             version '26.1'
             version '26.1.1'
             version '26.1.2'
