@@ -11,6 +11,8 @@ displayURL = "${mod.source_url}"
 updateJSONURL = "https://assets.melanx.de/updates/simple-backups.json"
 authors = "MelanX"
 displayTest = "IGNORE_ALL_VERSION"
+bannerFile="${mod.modid}_logo.png"
+iconFile="${mod.modid}_icon.png"
 description = '''
 A simple mod to create scheduled backups.
 '''
