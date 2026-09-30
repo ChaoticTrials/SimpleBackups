@@ -4,8 +4,8 @@ import de.melanx.simplebackups.compat.CherishedWorldsCompat;
 import de.melanx.simplebackups.compat.Mc2DiscordCompat;
 import de.melanx.simplebackups.compression.CompressionBase;
 import de.melanx.simplebackups.config.BackupType;
-import de.melanx.simplebackups.config.CommonConfig;
-import de.melanx.simplebackups.config.ServerConfig;
+import de.melanx.simplebackups.config.LocalConfig;
+import de.melanx.simplebackups.config.SyncedConfig;
 import de.melanx.simplebackups.exception.NotEnoughDiskSpaceException;
 import de.melanx.simplebackups.network.Pause;
 import de.melanx.simplebackups.sbk.SbkException;
@@ -63,7 +63,7 @@ public class BackupThread extends Thread {
     private boolean forceFullBackup = false;
 
     private BackupThread(@Nonnull MinecraftServer server, boolean quiet, BackupData backupData) {
-        this(server, quiet, backupData, CommonConfig.getBackupFormat());
+        this(server, quiet, backupData, LocalConfig.getBackupFormat());
     }
 
     private BackupThread(@Nonnull MinecraftServer server, boolean quiet, BackupData backupData, CompressionBase.BackupFormat format) {
@@ -75,14 +75,14 @@ public class BackupThread extends Thread {
             this.lastSaved = 0;
             this.fullBackup = true;
         } else {
-            long now = CommonConfig.useTickCounter() ? server.overworld().getGameTime() : System.currentTimeMillis();
-            this.lastSaved = CommonConfig.backupType() == BackupType.INCREMENTAL ? backupData.getLastSaved() : backupData.getLastFullBackup();
-            this.fullBackup = CommonConfig.backupType() == BackupType.FULL_BACKUPS || (now - CommonConfig.getFullBackupTimer()) > backupData.getLastFullBackup();
+            long now = LocalConfig.useTickCounter() ? server.overworld().getGameTime() : System.currentTimeMillis();
+            this.lastSaved = LocalConfig.backupType() == BackupType.INCREMENTAL ? backupData.getLastSaved() : backupData.getLastFullBackup();
+            this.fullBackup = LocalConfig.backupType() == BackupType.FULL_BACKUPS || (now - LocalConfig.getFullBackupTimer()) > backupData.getLastFullBackup();
         }
         this.setName("SimpleBackups");
         this.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
         String levelId = this.storageSource.getLevelId();
-        this.backupPath = CommonConfig.getOutputPath(levelId);
+        this.backupPath = LocalConfig.getOutputPath(levelId);
         this.manager = BackupChainManager.get(levelId);
     }
 
@@ -91,7 +91,7 @@ public class BackupThread extends Thread {
         if (BackupThread.shouldRunBackup(server)) {
             BackupThread thread = new BackupThread(server, false, backupData);
             thread.start();
-            long currentTime = CommonConfig.useTickCounter() ? server.overworld().getGameTime() : System.currentTimeMillis();
+            long currentTime = LocalConfig.useTickCounter() ? server.overworld().getGameTime() : System.currentTimeMillis();
             backupData.updateSaveTime(currentTime);
             if (thread.createFullBackup()) {
                 backupData.updateFullBackupTime(currentTime);
@@ -105,7 +105,7 @@ public class BackupThread extends Thread {
 
     public static boolean shouldRunBackup(MinecraftServer server) {
         BackupData backupData = BackupData.get(server);
-        if (!CommonConfig.isEnabled() || CommonConfig.backupsDisabledByJvmArg() || backupData.isPaused()) {
+        if (!LocalConfig.isEnabled() || LocalConfig.backupsDisabledByJvmArg() || backupData.isPaused()) {
             return false;
         }
 
@@ -115,15 +115,15 @@ public class BackupThread extends Thread {
 
         boolean arePlayersOnline = !server.getPlayerList().getPlayers().isEmpty();
 
-        if (CommonConfig.useTickCounter()) {
+        if (LocalConfig.useTickCounter()) {
             long gameTime = server.overworld().getGameTime();
             long lastSaved = backupData.getLastSaved();
             // convert timer from minutes into ticks
-            long timer = CommonConfig.getTimer(arePlayersOnline) * 20 * 60;
+            long timer = LocalConfig.getTimer(arePlayersOnline) * 20 * 60;
             return gameTime - lastSaved >= timer;
         }
 
-        return System.currentTimeMillis() - CommonConfig.getTimer(arePlayersOnline) > backupData.getLastSaved();
+        return System.currentTimeMillis() - LocalConfig.getTimer(arePlayersOnline) > backupData.getLastSaved();
     }
 
     public static void createBackup(MinecraftServer server, boolean quiet, CompressionBase.BackupFormat format) {
@@ -136,7 +136,7 @@ public class BackupThread extends Thread {
             return;
         }
 
-        int maxChains = CommonConfig.getBackupsToKeep();
+        int maxChains = LocalConfig.getBackupsToKeep();
         while (this.manager.getChains().size() > maxChains) {
             BackupChain chain = this.manager.getFirstChain();
             LOGGER.info("Deleting backup chain directory \"{}\"", chain.getParentFolder());
@@ -146,7 +146,7 @@ public class BackupThread extends Thread {
 
     public void saveStorageSize() {
         try {
-            while (this.manager.getFileSize() > CommonConfig.getMaxDiskSize()) {
+            while (this.manager.getFileSize() > LocalConfig.getMaxDiskSize()) {
                 List<BackupChain> chains = this.manager.getChains();
                 if (chains.size() <= 1) {
                     LOGGER.error("Cannot delete old chains to save disk space. Only one chain directory left!");
@@ -185,7 +185,7 @@ public class BackupThread extends Thread {
                 BackupThread.this.broadcast("simplebackups.not_enough_space", Style.EMPTY.withColor(ChatFormatting.RED));
                 Files.deleteIfExists(backupFilePath);
             } catch (IOException | SbkException e) {
-                if (CommonConfig.deleteUnfinishedBackup()) {
+                if (LocalConfig.deleteUnfinishedBackup()) {
                     this.broadcast("simplebackups.backup_failed_delete", Style.EMPTY.withColor(ChatFormatting.RED));
                     Files.deleteIfExists(backupFilePath);
                 } else {
@@ -244,16 +244,16 @@ public class BackupThread extends Thread {
     private void broadcast(String message, Style style, Object... parameters) {
         //noinspection UnstableApiUsage,StringConcatenationArgumentToLogCall
         SimpleBackups.LOGGER.info(String.format(FMLTranslations.getPattern(message, () -> message), parameters));
-        if (CommonConfig.sendMessages() && !this.quiet) {
+        if (LocalConfig.sendMessages() && !this.quiet) {
             this.server.execute(() -> {
                 this.server.getPlayerList().getPlayers().forEach(player -> {
-                    if (ServerConfig.messagesForEveryone() || player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
+                    if (SyncedConfig.messagesForEveryone() || player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER)) {
                         player.sendSystemMessage(BackupThread.component(player, message, parameters).withStyle(style));
                     }
                 });
             });
 
-            if (Mc2DiscordCompat.isLoaded() && CommonConfig.mc2discord()) {
+            if (Mc2DiscordCompat.isLoaded() && LocalConfig.mc2discord()) {
                 Mc2DiscordCompat.announce(BackupThread.component(null, message, parameters));
             }
         }
@@ -272,7 +272,7 @@ public class BackupThread extends Thread {
     }
 
     private LogSnapshot getLogSnapshot(Path latestLogPath) {
-        if (!CommonConfig.captureLatestLog()) {
+        if (!LocalConfig.captureLatestLog()) {
             return LogSnapshot.disabled();
         }
 

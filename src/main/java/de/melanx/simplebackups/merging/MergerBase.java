@@ -7,7 +7,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import de.melanx.simplebackups.BackupChain;
 import de.melanx.simplebackups.SimpleBackups;
 import de.melanx.simplebackups.compression.CompressionBase;
-import de.melanx.simplebackups.config.CommonConfig;
+import de.melanx.simplebackups.config.LocalConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 
@@ -51,7 +51,7 @@ public abstract class MergerBase {
     }
 
     protected static Path mainBackupsDir() {
-        return CommonConfig.getOutputPath("ignore").getParent();
+        return LocalConfig.getOutputPath("ignore").getParent();
     }
 
     public void collectFiles() throws CommandSyntaxException {

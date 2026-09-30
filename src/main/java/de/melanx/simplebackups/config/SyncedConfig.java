@@ -2,7 +2,7 @@ package de.melanx.simplebackups.config;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
 
-public class ServerConfig {
+public class SyncedConfig {
 
     public static final ModConfigSpec CONFIG;
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();

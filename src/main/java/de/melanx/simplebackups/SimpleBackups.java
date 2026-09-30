@@ -1,8 +1,8 @@
 package de.melanx.simplebackups;
 
 import de.melanx.simplebackups.client.ClientInit;
-import de.melanx.simplebackups.config.CommonConfig;
-import de.melanx.simplebackups.config.ServerConfig;
+import de.melanx.simplebackups.config.LocalConfig;
+import de.melanx.simplebackups.config.SyncedConfig;
 import de.melanx.simplebackups.network.Pause;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -24,13 +24,13 @@ public class SimpleBackups {
 
     public SimpleBackups(IEventBus modEventBus, ModContainer modContainer, Dist dist) {
         ToolsLoader.init();
-        modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.CONFIG, SimpleBackups.MODID + "/common.toml");
-        modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.CONFIG, SimpleBackups.MODID + "/server.toml");
+        modContainer.registerConfig(ModConfig.Type.LOCAL, LocalConfig.CONFIG, SimpleBackups.MODID + "/common.toml"); // todo 26.4 - rename to local.toml
+        modContainer.registerConfig(ModConfig.Type.SYNCED, SyncedConfig.CONFIG, SimpleBackups.MODID + "/server.toml"); // todo 26.4 - rename to synced.toml
         NeoForge.EVENT_BUS.register(new EventListener());
         modEventBus.addListener(this::setup);
         modEventBus.addListener(this::onRegisterPayloadHandler);
 
-        if (CommonConfig.backupsDisabledByJvmArg()) {
+        if (LocalConfig.backupsDisabledByJvmArg()) {
             LOGGER.info("##########################################");
             LOGGER.info("#  Backups are disabled by JVM argument  #");
             LOGGER.info("##########################################");

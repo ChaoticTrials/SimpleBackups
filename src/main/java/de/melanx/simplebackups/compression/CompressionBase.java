@@ -4,7 +4,7 @@ import de.melanx.simplebackups.BackupResult;
 import de.melanx.simplebackups.SimpleBackups;
 import de.melanx.simplebackups.StorageSize;
 import de.melanx.simplebackups.ToolsLoader;
-import de.melanx.simplebackups.config.CommonConfig;
+import de.melanx.simplebackups.config.LocalConfig;
 import de.melanx.simplebackups.exception.NotEnoughDiskSpaceException;
 import de.melanx.simplebackups.sbk.SbkException;
 import net.minecraft.server.MinecraftServer;
@@ -37,7 +37,7 @@ public abstract class CompressionBase {
 
     public static BackupResult makeBackup(MinecraftServer server, LevelStorageSource.LevelStorageAccess storageAccess, Path backupPath, Path backupFilePath, boolean doFullBackup, BackupFormat format, long lastSaved) throws IOException {
         storageAccess.checkLock();
-        if (CommonConfig.saveAll()) {
+        if (LocalConfig.saveAll()) {
             server.executeBlocking(() -> server.saveEverything(true, false, true));
         }
 
@@ -59,7 +59,7 @@ public abstract class CompressionBase {
         Path sourceDir = levelPath;
         Path tempDir = null;
         try {
-            boolean doPreCopy = CommonConfig.preCopy();
+            boolean doPreCopy = LocalConfig.preCopy();
 
             if (!doPreCopy && format != BackupFormat.ZIP) {
                 SimpleBackups.LOGGER.info("Pre-copy disabled for {} compression. It's highly recommended to enable it to avoid problems!", format.name());
@@ -139,9 +139,9 @@ public abstract class CompressionBase {
 
     protected abstract class CompressionFileVisitor extends SimpleFileVisitor<Path> {
 
-        protected final List<Path> ignoredPaths = CommonConfig.getIgnoredPaths();
-        protected final List<Path> ignoredFiles = CommonConfig.getIgnoredFiles();
-        protected final String ignoredFilesRegex = CommonConfig.getIgnoredFilesRegex();
+        protected final List<Path> ignoredPaths = LocalConfig.getIgnoredPaths();
+        protected final List<Path> ignoredFiles = LocalConfig.getIgnoredFiles();
+        protected final String ignoredFilesRegex = LocalConfig.getIgnoredFilesRegex();
         protected final boolean ignoreSomething = !this.ignoredPaths.isEmpty() || !this.ignoredFiles.isEmpty() || !this.ignoredFilesRegex.isEmpty();
         private final Path levelPath;
 
@@ -177,7 +177,7 @@ public abstract class CompressionBase {
                 return FileVisitResult.CONTINUE;
             }
 
-            if (CommonConfig.ignoreTempFiles() && TEMP_FILE_PATTERN.matcher(file.getFileName().toString()).matches()) {
+            if (LocalConfig.ignoreTempFiles() && TEMP_FILE_PATTERN.matcher(file.getFileName().toString()).matches()) {
                 SimpleBackups.LOGGER.debug("Skipping temporary file: {}", file);
                 return FileVisitResult.CONTINUE;
             }
@@ -209,7 +209,7 @@ public abstract class CompressionBase {
                 return FileVisitResult.CONTINUE;
             }
 
-            if (CommonConfig.collectErrors()) {
+            if (LocalConfig.collectErrors()) {
                 SimpleBackups.LOGGER.error("Failed to backup file: {}", file, exc);
                 CompressionBase.this.errors.add(this.levelPath.relativize(file));
                 return FileVisitResult.CONTINUE;

@@ -4,7 +4,7 @@ import com.mojang.brigadier.context.CommandContext;
 import de.melanx.simplebackups.BackupChain;
 import de.melanx.simplebackups.SimpleBackups;
 import de.melanx.simplebackups.compression.CompressionBase;
-import de.melanx.simplebackups.config.CommonConfig;
+import de.melanx.simplebackups.config.LocalConfig;
 import de.melanx.simplebackups.sbk.*;
 import net.minecraft.commands.CommandSourceStack;
 
@@ -64,11 +64,11 @@ public class SbkMerger extends MergerBase {
                 }
             });
 
-            int lvl = CommonConfig.getCompressionLevel();
+            int lvl = LocalConfig.getCompressionLevel();
             int lzmaPreset = lvl < 0 ? SbkWriteOptions.DEFAULT_PRESET : Math.clamp(lvl, 0, 9);
             SbkWriteOptions options = SbkWriteOptions.builder()
                     .lzmaPreset(lzmaPreset)
-                    .algorithm(CommonConfig.sbkAlgorithm())
+                    .algorithm(LocalConfig.sbkAlgorithm())
                     .build();
 
             SbkWriter.compress(sourceDir, files, Path.of(levelName), this.mergedBackupPath(), options, SbkProgress.SILENT);

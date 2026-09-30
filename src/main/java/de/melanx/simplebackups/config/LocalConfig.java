@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.zip.Deflater;
 
-public class CommonConfig {
+public class LocalConfig {
 
     private static final String JVM_PROP_DISABLE_BACKUPS = "simplebackups.disableBackups";
 
@@ -169,7 +169,7 @@ public class CommonConfig {
     }
 
     public static boolean backupsDisabledByJvmArg() {
-        return CommonConfig.parseBoolean(System.getProperty(JVM_PROP_DISABLE_BACKUPS), false);
+        return LocalConfig.parseBoolean(System.getProperty(JVM_PROP_DISABLE_BACKUPS), false);
     }
 
     public static int getBackupsToKeep() {
@@ -179,7 +179,7 @@ public class CommonConfig {
     @Deprecated
     // converts config value from milliseconds to minutes
     public static long getTimer() {
-        return CommonConfig.getTimer(true);
+        return LocalConfig.getTimer(true);
     }
 
     public static long getTimer(boolean arePlayersOnline) {

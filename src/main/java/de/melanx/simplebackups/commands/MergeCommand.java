@@ -11,7 +11,7 @@ import de.melanx.simplebackups.BackupChainManager;
 import de.melanx.simplebackups.BackupData;
 import de.melanx.simplebackups.SimpleBackups;
 import de.melanx.simplebackups.config.BackupType;
-import de.melanx.simplebackups.config.CommonConfig;
+import de.melanx.simplebackups.config.LocalConfig;
 import de.melanx.simplebackups.merging.MergerBase;
 import de.melanx.simplebackups.merging.SbkMerger;
 import de.melanx.simplebackups.merging.ZipMerger;
@@ -37,7 +37,7 @@ public class MergeCommand implements Command<CommandSourceStack> {
     @Override
     public int run(CommandContext<CommandSourceStack> commandContext) throws CommandSyntaxException {
         // Check if only modified files should be backed up
-        if (CommonConfig.backupType() == BackupType.FULL_BACKUPS) {
+        if (LocalConfig.backupType() == BackupType.FULL_BACKUPS) {
             throw new SimpleCommandExceptionType(Component.translatable("simplebackups.commands.only_modified")).create();
         }
 

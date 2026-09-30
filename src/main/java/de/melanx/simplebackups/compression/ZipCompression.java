@@ -1,6 +1,6 @@
 package de.melanx.simplebackups.compression;
 
-import de.melanx.simplebackups.config.CommonConfig;
+import de.melanx.simplebackups.config.LocalConfig;
 
 import javax.annotation.Nonnull;
 import java.io.BufferedInputStream;
@@ -24,7 +24,7 @@ public class ZipCompression extends CompressionBase {
     @Override
     public void makeBackup(Path levelName, Path levelPath, Path outputFile) throws IOException {
         try (ZipOutputStream zipStream = new ZipOutputStream(new BufferedOutputStream(Files.newOutputStream(outputFile)))) {
-            zipStream.setLevel(CommonConfig.getCompressionLevel());
+            zipStream.setLevel(LocalConfig.getCompressionLevel());
 
             Files.walkFileTree(levelPath, new CompressionFileVisitor(levelPath) {
 

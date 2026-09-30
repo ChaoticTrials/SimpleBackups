@@ -1,7 +1,7 @@
 package de.melanx.simplebackups.compression;
 
 import de.melanx.simplebackups.SimpleBackups;
-import de.melanx.simplebackups.config.CommonConfig;
+import de.melanx.simplebackups.config.LocalConfig;
 import de.melanx.simplebackups.sbk.SbkWriteOptions;
 import de.melanx.simplebackups.sbk.SbkWriter;
 
@@ -42,7 +42,7 @@ public class SbkCompression extends CompressionBase {
 
         SbkWriteOptions options = SbkWriteOptions.builder()
                 .lzmaPreset(this.lzmaPreset())
-                .algorithm(CommonConfig.sbkAlgorithm())
+                .algorithm(LocalConfig.sbkAlgorithm())
                 .build();
 
         SbkWriter.compress(levelPath, acceptedFiles, levelName, outputFile, options,
@@ -50,7 +50,7 @@ public class SbkCompression extends CompressionBase {
     }
 
     private int lzmaPreset() {
-        int lvl = CommonConfig.getCompressionLevel();
+        int lvl = LocalConfig.getCompressionLevel();
         // Map config level [-1, 0..9] to LZMA2 preset [0..9]
         // -1 (DEFAULT_COMPRESSION) maps to preset 3
         if (lvl < 0) {

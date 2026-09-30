@@ -3,8 +3,8 @@ package de.melanx.simplebackups;
 import de.melanx.simplebackups.commands.BackupCommand;
 import de.melanx.simplebackups.commands.MergeCommand;
 import de.melanx.simplebackups.commands.PauseCommand;
-import de.melanx.simplebackups.config.CommonConfig;
-import de.melanx.simplebackups.config.ServerConfig;
+import de.melanx.simplebackups.config.LocalConfig;
+import de.melanx.simplebackups.config.SyncedConfig;
 import de.melanx.simplebackups.network.Pause;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.MinecraftServer;
@@ -25,7 +25,7 @@ public class EventListener {
     @SubscribeEvent
     public void registerCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal(SimpleBackups.MODID)
-                .requires(stack -> ServerConfig.commandsCheatsDisabled() || stack.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
+                .requires(stack -> SyncedConfig.commandsCheatsDisabled() || stack.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER))
                 .then(BackupCommand.register())
                 .then(PauseCommand.register())
                 .then(MergeCommand.register()));
@@ -33,7 +33,7 @@ public class EventListener {
 
     @SubscribeEvent
     public void onServerTick(LevelTickEvent.Post event) {
-        if (CommonConfig.backupsDisabledByJvmArg()) {
+        if (LocalConfig.backupsDisabledByJvmArg()) {
             return;
         }
 
@@ -42,13 +42,13 @@ public class EventListener {
             EventListener.checkForTickCounterConfigUpdate(event.getLevel().getServer());
 
             boolean arePlayersOnline = !level.getServer().getPlayerList().getPlayers().isEmpty();
-            if (!arePlayersOnline && CommonConfig.doNoPlayerBackups()) {
-                this.doBackup = !(CommonConfig.noPlayerBackupCount() == 0 || BackupData.get(level).backupsSinceLastPlayerJoined() >= CommonConfig.noPlayerBackupCount());
+            if (!arePlayersOnline && LocalConfig.doNoPlayerBackups()) {
+                this.doBackup = !(LocalConfig.noPlayerBackupCount() == 0 || BackupData.get(level).backupsSinceLastPlayerJoined() >= LocalConfig.noPlayerBackupCount());
             }
 
             if (arePlayersOnline || this.doBackup) {
                 BackupData backupData = BackupData.get(level);
-                this.doBackup = !(CommonConfig.noPlayerBackupCount() == 0 || backupData.backupsSinceLastPlayerJoined() >= CommonConfig.noPlayerBackupCount());
+                this.doBackup = !(LocalConfig.noPlayerBackupCount() == 0 || backupData.backupsSinceLastPlayerJoined() >= LocalConfig.noPlayerBackupCount());
 
                 boolean done = BackupThread.tryCreateBackup(level.getServer());
                 if (done) {
@@ -66,7 +66,7 @@ public class EventListener {
         ServerPlayer player = (ServerPlayer) event.getEntity();
         BackupData.get(player.level()).resetBackupsSinceLastPlayerJoined();
         //noinspection UnstableApiUsage
-        if (CommonConfig.isEnabled() && !CommonConfig.backupsDisabledByJvmArg() && NetworkRegistry.hasChannel(player.connection.connection, null, Pause.ID)) {
+        if (LocalConfig.isEnabled() && !LocalConfig.backupsDisabledByJvmArg() && NetworkRegistry.hasChannel(player.connection.connection, null, Pause.ID)) {
             PacketDistributor.sendToPlayer(player, new Pause(BackupData.get(player.level().getServer()).isPaused()));
         }
     }
@@ -76,21 +76,21 @@ public class EventListener {
         if (event.getEntity() instanceof ServerPlayer player) {
             //noinspection ConstantConditions
             if (player.level().getServer().getPlayerList().getPlayers().isEmpty()) {
-                this.doBackup = !(CommonConfig.noPlayerBackupCount() == 0 || BackupData.get(player.level()).backupsSinceLastPlayerJoined() >= CommonConfig.noPlayerBackupCount());
+                this.doBackup = !(LocalConfig.noPlayerBackupCount() == 0 || BackupData.get(player.level()).backupsSinceLastPlayerJoined() >= LocalConfig.noPlayerBackupCount());
             }
         }
     }
 
     private static void checkForTickCounterConfigUpdate(MinecraftServer server) {
         BackupData backupData = BackupData.get(server);
-        boolean usesTickCounter = CommonConfig.useTickCounter();
+        boolean usesTickCounter = LocalConfig.useTickCounter();
 
         if (usesTickCounter != backupData.usesTickCounter()) {
             SimpleBackups.LOGGER.info("Tick counter config updated, usesTickCounter: {}", usesTickCounter);
             backupData.setUsesTickCounter(usesTickCounter);
 
             long lastTimeSaved = backupData.getLastSaved();
-            long commonConfigTimer = CommonConfig.getTimer(true);
+            long commonConfigTimer = LocalConfig.getTimer(true);
 
             SimpleBackups.LOGGER.info("Initial lastTimeSaved: {}", lastTimeSaved);
             SimpleBackups.LOGGER.info("Config timer in minutes: {}", commonConfigTimer);

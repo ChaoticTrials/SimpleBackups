@@ -1,7 +1,7 @@
 package de.melanx.simplebackups;
 
 import de.melanx.simplebackups.compression.CompressionBase;
-import de.melanx.simplebackups.config.CommonConfig;
+import de.melanx.simplebackups.config.LocalConfig;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -40,13 +40,13 @@ public class BackupChainManager {
     }
 
     public BackupChain createChain(String baseName) {
-        return this.createChain(baseName, CommonConfig.getBackupFormat());
+        return this.createChain(baseName, LocalConfig.getBackupFormat());
     }
 
     public BackupChain createChain(String baseName, CompressionBase.BackupFormat format) {
-        Path chainDir = CommonConfig.getOutputPath(this.levelId).resolve(baseName);
+        Path chainDir = LocalConfig.getOutputPath(this.levelId).resolve(baseName);
         Path backupFilePath = Paths.get("full" + format.getExtension());
-        BackupChain backupChain = new BackupChain(chainDir, backupFilePath, CommonConfig.backupType(), format);
+        BackupChain backupChain = new BackupChain(chainDir, backupFilePath, LocalConfig.backupType(), format);
 
         this.addChain(backupChain);
         return backupChain;
@@ -81,7 +81,7 @@ public class BackupChainManager {
     public void reloadAllChains() {
         List<BackupChain> chains = new ArrayList<>();
         try {
-            Path outputPath = CommonConfig.getOutputPath(this.levelId);
+            Path outputPath = LocalConfig.getOutputPath(this.levelId);
             if (!Files.exists(outputPath)) {
                 this.chains.clear();
                 return;

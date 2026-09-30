@@ -1,7 +1,7 @@
 package de.melanx.simplebackups.compression;
 
 import de.melanx.simplebackups.ToolsLoader;
-import de.melanx.simplebackups.config.CommonConfig;
+import de.melanx.simplebackups.config.LocalConfig;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 
@@ -26,7 +26,7 @@ public class ZstdCompression extends CompressionBase {
     @Override
     public void makeBackup(Path levelName, Path levelPath, Path outputFile) throws IOException {
         // Map config level (0–9, -1 = default) to ZSTD levels (1–19, -1 = default 3)
-        int cfgLevel = CommonConfig.getCompressionLevel();
+        int cfgLevel = LocalConfig.getCompressionLevel();
         int zstdLevel = cfgLevel < 0 ? -1 : Math.max(1, cfgLevel * 2 + 1);
 
         try (OutputStream zstdOut = ToolsLoader.wrapWithZstd(new BufferedOutputStream(Files.newOutputStream(outputFile)), zstdLevel);
